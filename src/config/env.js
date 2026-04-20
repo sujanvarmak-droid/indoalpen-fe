@@ -1,0 +1,9 @@
+const ENV = {
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  APP_ENV: import.meta.env.VITE_APP_ENV ?? 'development',
+  ENABLE_MSW: import.meta.env.VITE_ENABLE_MSW === 'true',
+};
+
+if (!ENV.API_BASE_URL) throw new Error('[IndoAlpenVerlag] VITE_API_BASE_URL is required');
+
+export default ENV;

@@ -1,0 +1,16 @@
+import { ROLES } from '@/constants/roles';
+
+export const PERMISSIONS = {
+  VIEW_DASHBOARD: 'view_dashboard',
+  SUBMIT_PAPER:   'submit_paper',
+  EDIT_OWN_PAPER: 'edit_own_paper',
+  REVIEW_PAPER:   'review_paper',
+  MANAGE_USERS:   'manage_users',
+};
+
+export const ROLE_PERMISSIONS = {
+  [ROLES.AUTHOR]:   [PERMISSIONS.VIEW_DASHBOARD, PERMISSIONS.SUBMIT_PAPER, PERMISSIONS.EDIT_OWN_PAPER],
+  [ROLES.REVIEWER]: [PERMISSIONS.VIEW_DASHBOARD, PERMISSIONS.REVIEW_PAPER],
+  [ROLES.EDITOR]:   [PERMISSIONS.VIEW_DASHBOARD, PERMISSIONS.REVIEW_PAPER],
+  [ROLES.ADMIN]:    Object.values(PERMISSIONS),
+};

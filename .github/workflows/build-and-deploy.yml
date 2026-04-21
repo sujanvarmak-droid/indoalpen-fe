@@ -27,8 +27,7 @@ jobs:
         env:
           VITE_APP_ENV: production
           VITE_ENABLE_MSW: false
-          # Add your production API URL here
-          # VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: http://98.130.107.197:8080
 
       - name: Deploy to S3
         run: aws s3 sync dist/ s3://indo-alpen-digital --delete

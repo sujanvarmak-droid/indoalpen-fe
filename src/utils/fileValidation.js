@@ -3,8 +3,8 @@ const ALLOWED_TYPES = {
   'image/png':       { extensions: ['png'], maxMb: 20 },
   'image/jpeg':      { extensions: ['jpg', 'jpeg'], maxMb: 20 },
   'image/tiff':      { extensions: ['tif', 'tiff'], maxMb: 20 },
-  'video/mp4':       { extensions: ['mp4'], maxMb: 500 },
-  'video/quicktime': { extensions: ['mov'], maxMb: 500 },
+  'video/mp4':       { extensions: ['mp4'], maxMb: 100 },
+  'video/quicktime': { extensions: ['mov'], maxMb: 100 },
   'application/msword': { extensions: ['doc'], maxMb: 20 },
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
     extensions: ['docx'],

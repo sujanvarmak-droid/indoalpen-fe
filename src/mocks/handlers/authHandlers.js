@@ -2,7 +2,8 @@ import { http, HttpResponse } from 'msw';
 
 const BASE = 'http://localhost:8080/api';
 
-const mockToken = 'eyJ.mock.token';
+const mockAccessToken = 'eyJ.mock.access.token';
+const mockRefreshToken = 'eyJ.mock.refresh.token';
 const mockUser = {
   id:        'usr-1',
   email:     'author@indoalpen.com',
@@ -13,10 +14,11 @@ const mockUser = {
 };
 
 export const authHandlers = [
-  // POST /auth/login → { token, role, userId, email }
+  // POST /auth/login → { accessToken, refreshToken, role, userId, email }
   http.post(`${BASE}/auth/login`, () =>
     HttpResponse.json({
-      token:  mockToken,
+      accessToken: mockAccessToken,
+      refreshToken: mockRefreshToken,
       role:   mockUser.role,
       userId: mockUser.id,
       email:  mockUser.email,
@@ -34,10 +36,11 @@ export const authHandlers = [
   // GET /auth/me → { id, email, fullName, role, isActive, createdAt }
   http.get(`${BASE}/auth/me`, () => HttpResponse.json(mockUser)),
 
-  // GET /auth/verify-email?token= → { token, role, userId, email }
+  // GET /auth/verify-email?token= → { accessToken, refreshToken, role, userId, email }
   http.get(`${BASE}/auth/verify-email`, () =>
     HttpResponse.json({
-      token:  mockToken,
+      accessToken: mockAccessToken,
+      refreshToken: mockRefreshToken,
       role:   mockUser.role,
       userId: mockUser.id,
       email:  mockUser.email,

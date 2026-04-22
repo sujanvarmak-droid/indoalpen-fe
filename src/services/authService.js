@@ -2,7 +2,7 @@ import api from '@/services/api';
 
 export const login = async ({ email, password }) => {
   const res = await api.post('/auth/login', { email, password });
-  return res.data; // { token, role, userId, email }
+  return res.data; // { accessToken, refreshToken, role, userId, email }
 };
 
 export const signup = async ({ fullName, email, password, consentGiven }) => {
@@ -17,7 +17,7 @@ export const getMe = async () => {
 
 export const verifyEmail = async (token) => {
   const res = await api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`);
-  return res.data; // { token, role, userId, email }
+  return res.data; // { accessToken, refreshToken, role, userId, email }
 };
 
 export const forgotPassword = async ({ email }) => {

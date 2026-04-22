@@ -1,6 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import * as authService from '@/services/authService';
-import { getToken, setToken, removeToken } from '@/utils/tokenStorage';
+import {
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  setRefreshToken,
+  clearAuthTokens,
+} from '@/utils/tokenStorage';
 
 const extractError = (error) =>
   error.response?.data ?? { code: 'UNKNOWN', message: error.message };
@@ -10,7 +16,8 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const data = await authService.login(credentials);
-      setToken(data.token);
+      setAccessToken(data.accessToken ?? data.token);
+      setRefreshToken(data.refreshToken);
       return { id: data.userId, email: data.email, role: data.role };
     } catch (error) {
       return rejectWithValue(extractError(error));
@@ -29,15 +36,15 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Replaces the old refreshToken — reads stored token then calls GET /api/auth/me
+// Restore session when either token cookie exists.
 export const restoreSession = createAsyncThunk(
   'auth/restoreSession',
   async (_, { rejectWithValue }) => {
     try {
-      if (!getToken()) return rejectWithValue({ code: 'NO_TOKEN' });
+      if (!getAccessToken() && !getRefreshToken()) return rejectWithValue({ code: 'NO_TOKEN' });
       return await authService.getMe(); // { id, email, fullName, role, isActive, createdAt }
     } catch (error) {
-      removeToken();
+      clearAuthTokens();
       return rejectWithValue(extractError(error));
     }
   }
@@ -46,7 +53,7 @@ export const restoreSession = createAsyncThunk(
 export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
   async () => {
-    removeToken();
+    clearAuthTokens();
   }
 );
 
@@ -55,7 +62,8 @@ export const verifyEmail = createAsyncThunk(
   async (token, { rejectWithValue }) => {
     try {
       const data = await authService.verifyEmail(token);
-      setToken(data.token);
+      setAccessToken(data.accessToken ?? data.token);
+      setRefreshToken(data.refreshToken);
       return { id: data.userId, email: data.email, role: data.role };
     } catch (error) {
       return rejectWithValue(extractError(error));

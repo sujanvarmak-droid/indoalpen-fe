@@ -1,3 +1,5 @@
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+
 // Role values match the backend exactly (uppercase)
 export const ROLES = {
   ADMIN:    'ADMIN',
@@ -7,7 +9,7 @@ export const ROLES = {
 };
 
 export const ROLE_DASHBOARDS = {
-  AUTHOR:   '/dashboard',
+  AUTHOR:   ACCOUNT_ROUTES.DASHBOARD,
   REVIEWER: '/reviewer/dashboard',
   EDITOR:   '/editor/dashboard',
   ADMIN:    '/admin/dashboard',

@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { cn } from '@/utils/cn';
 
 export const Select = forwardRef(
-  ({ label, error, id, options = [], placeholder, className, ...rest }, ref) => {
+  ({ label, error, helperText, id, options = [], placeholder, className, ...rest }, ref) => {
     return (
       <div className="flex flex-col gap-1">
         {label && (
@@ -34,7 +34,8 @@ export const Select = forwardRef(
             </option>
           ))}
         </select>
-        {error && <p className="text-xs text-danger">{error}</p>}
+        {error ? <p className="text-xs text-danger">{error}</p> : null}
+        {!error && helperText ? <p className="text-xs text-gray-500">{helperText}</p> : null}
       </div>
     );
   }

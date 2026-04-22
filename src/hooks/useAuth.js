@@ -9,6 +9,7 @@ import {
 import { loginUser, logoutUser } from '@/features/auth/authThunks';
 import { addToast } from '@/features/ui/uiSlice';
 import { ROLE_DASHBOARDS } from '@/constants/roles';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -24,7 +25,7 @@ export const useAuth = () => {
     if (loginUser.fulfilled.match(result)) {
       dispatch(addToast({ message: 'Welcome back!', type: 'success' }));
       const role = result.payload.role;
-      const dest = ROLE_DASHBOARDS[role] ?? '/dashboard';
+      const dest = ROLE_DASHBOARDS[role] ?? ACCOUNT_ROUTES.DASHBOARD;
       return { success: true, redirectTo: dest };
     }
     const err = result.payload;

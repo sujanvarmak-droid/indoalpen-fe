@@ -22,21 +22,25 @@ export const Button = ({
   loading = false,
   disabled = false,
   size = 'md',
+  fullWidth = false,
   type = 'button',
   onClick,
   className,
   children,
+  ...rest
 }) => {
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
+      {...rest}
       className={cn(
         'inline-flex items-center justify-center gap-2 rounded-md font-medium',
         'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
         variantClasses[variant],
         sizeClasses[size],
+        fullWidth && 'w-full',
         (disabled || loading) && 'cursor-not-allowed',
         className
       )}

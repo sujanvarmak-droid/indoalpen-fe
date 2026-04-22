@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { Button } from '@/components/ui/Button';
 
 const PUBLICATION_TYPES = [
   { id: 'journals', label: 'Journals', count: 2841 },
@@ -46,8 +48,10 @@ function FilterSection({ title, children }) {
   const [open, setOpen] = useState(true);
   return (
     <div className="border-b border-gray-200 py-4">
-      <button
-        className="flex items-center justify-between w-full text-left"
+      <Button
+        variant="ghost"
+        size="sm"
+        className="flex w-full items-center justify-between px-0 text-left text-gray-700 hover:bg-transparent"
         onClick={() => setOpen((o) => !o)}
       >
         <span className="text-sm font-semibold text-gray-700">{title}</span>
@@ -57,7 +61,7 @@ function FilterSection({ title, children }) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Button>
       {open && <div className="mt-3 space-y-2">{children}</div>}
     </div>
   );
@@ -125,15 +129,25 @@ export default function Browse() {
   });
 
   const totalCount = 4921;
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    setShowFilters(false);
+  }, [searchParams]);
 
   return (
     <div className="bg-white min-h-screen">
       {/* Page header */}
       <div className="bg-brand-muted border-b border-gray-200 py-5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-xl font-semibold text-brand">
-            Showing {totalCount.toLocaleString()} publications
-          </h1>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-xl font-semibold text-brand">
+              Showing {totalCount.toLocaleString()} publications
+            </h1>
+            <Button type="button" onClick={() => navigate(ACCOUNT_ROUTES.NEW_SUBMISSION)}>
+              Start Publish Journey
+            </Button>
+          </div>
           {activeCategory && (
             <div className="mt-2 flex items-center gap-2">
               <span className="text-sm text-gray-500">Filtered by category:</span>
@@ -155,9 +169,14 @@ export default function Browse() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex gap-8">
+        <div className="mb-4 lg:hidden">
+          <Button variant="secondary" fullWidth onClick={() => setShowFilters((prev) => !prev)}>
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </Button>
+        </div>
+        <div className="flex flex-col gap-8 lg:flex-row">
           {/* ── Sidebar filters ── */}
-          <aside className="w-56 shrink-0">
+          <aside className={`shrink-0 lg:w-56 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="sticky top-20">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Filter by</p>
 
@@ -205,12 +224,14 @@ export default function Browse() {
               </FilterSection>
 
               {(selectedTypes.length > 0 || activeCategory || selectedAccess.length > 0) && (
-                <button
-                  className="mt-4 text-xs text-brand-light hover:underline"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-4 px-0 text-xs text-brand-light hover:bg-transparent"
                   onClick={() => navigate('/browse')}
                 >
                   Clear all filters
-                </button>
+                </Button>
               )}
             </div>
           </aside>
@@ -218,32 +239,36 @@ export default function Browse() {
           {/* ── Main content ── */}
           <main className="flex-1 min-w-0">
             {/* Alphabet nav */}
-            <div className="flex flex-wrap gap-1.5 mb-6">
+            <div className="mb-6 flex flex-wrap gap-1.5">
               {alphabet.map((letter) => (
-                <button
+                <Button
                   key={letter}
                   onClick={() => updateParam('letter', letter)}
+                  variant={activeLetter === letter ? 'primary' : 'secondary'}
+                  size="sm"
                   className={[
-                    'w-8 h-8 flex items-center justify-center text-sm font-medium rounded border transition-colors',
+                    'h-8 w-8 border px-0',
                     activeLetter === letter
-                      ? 'bg-brand text-white border-brand'
-                      : 'text-brand-light border-brand-light hover:bg-brand-muted',
+                      ? 'border-brand'
+                      : 'border-brand-light text-brand-light hover:bg-brand-muted',
                   ].join(' ')}
                 >
                   {letter}
-                </button>
+                </Button>
               ))}
-              <button
+              <Button
                 onClick={() => updateParam('letter', '0-9')}
+                variant={activeLetter === '0-9' ? 'primary' : 'secondary'}
+                size="sm"
                 className={[
-                  'px-2 h-8 flex items-center justify-center text-sm font-medium rounded border transition-colors',
+                  'h-8 border px-2',
                   activeLetter === '0-9'
-                    ? 'bg-brand text-white border-brand'
-                    : 'text-brand-light border-brand-light hover:bg-brand-muted',
+                    ? 'border-brand'
+                    : 'border-brand-light text-brand-light hover:bg-brand-muted',
                 ].join(' ')}
               >
                 0-9
-              </button>
+              </Button>
             </div>
 
             {/* Section heading */}
@@ -259,7 +284,7 @@ export default function Browse() {
                     key={pub.id}
                     className="border border-gray-200 rounded-lg px-5 py-4 hover:border-brand-light hover:shadow-sm transition-all"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-brand hover:text-brand-light cursor-pointer transition-colors leading-snug">
                           {pub.title}
@@ -281,18 +306,20 @@ export default function Browse() {
                 ))}
               </ul>
             ) : (
-              <div className="text-center py-16 text-gray-400">
+              <div className="py-16 text-center text-gray-400">
                 <svg className="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <p className="text-sm">No publications found for the selected filters.</p>
-                <button
-                  className="mt-3 text-xs text-brand-light hover:underline"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-3 text-xs text-brand-light hover:bg-transparent"
                   onClick={() => navigate('/browse')}
                 >
                   Clear filters
-                </button>
+                </Button>
               </div>
             )}
           </main>

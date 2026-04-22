@@ -1,3 +1,6 @@
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+
 export const AuthorInput = ({ value = [], onChange, error }) => {
   const updateAuthor = (index, field, fieldValue) => {
     const updated = value.map((a, i) =>
@@ -19,48 +22,50 @@ export const AuthorInput = ({ value = [], onChange, error }) => {
     <div className="flex flex-col gap-3">
       <label className="text-sm font-medium text-gray-700">Authors</label>
       {value.map((author, index) => (
-        <div key={index} className="flex gap-2 items-start">
+        <div key={index} className="flex flex-col gap-2 rounded-md border border-gray-100 p-3 sm:flex-row sm:items-start">
           <div className="flex-1">
-            <input
+            <Input
               type="text"
               placeholder="Author name *"
               value={author.name}
               onChange={(e) => updateAuthor(index, 'name', e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-brand-light"
             />
             {!author.name && (
               <p className="text-xs text-danger mt-0.5">Name required</p>
             )}
           </div>
           <div className="flex-1">
-            <input
+            <Input
               type="text"
               placeholder="Affiliation (optional)"
               value={author.affiliation}
               onChange={(e) => updateAuthor(index, 'affiliation', e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-light focus:border-brand-light"
             />
           </div>
-          <button
+          <Button
             type="button"
             onClick={() => removeAuthor(index)}
             disabled={value.length <= 1}
-            className="mt-2 text-gray-400 hover:text-danger transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            variant="ghost"
+            size="sm"
+            className="self-end text-gray-400 hover:text-danger sm:mt-1"
             aria-label="Remove author"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
       ))}
-      <button
+      <Button
         type="button"
         onClick={addAuthor}
-        className="self-start text-sm text-brand-light hover:underline font-medium"
+        variant="ghost"
+        size="sm"
+        className="self-start px-0 text-sm font-medium text-brand-light hover:bg-transparent"
       >
         + Add Author
-      </button>
+      </Button>
       {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   );

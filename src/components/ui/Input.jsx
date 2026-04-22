@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { cn } from '@/utils/cn';
 
 export const Input = forwardRef(
-  ({ label, error, id, type = 'text', className, ...rest }, ref) => {
+  ({ label, error, helperText, id, type = 'text', className, ...rest }, ref) => {
     return (
       <div className="flex flex-col gap-1">
         {label && (
@@ -25,7 +25,8 @@ export const Input = forwardRef(
           )}
           {...rest}
         />
-        {error && <p className="text-xs text-danger">{error}</p>}
+        {error ? <p className="text-xs text-danger">{error}</p> : null}
+        {!error && helperText ? <p className="text-xs text-gray-500">{helperText}</p> : null}
       </div>
     );
   }

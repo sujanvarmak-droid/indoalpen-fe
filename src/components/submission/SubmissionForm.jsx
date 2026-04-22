@@ -125,8 +125,8 @@ export const SubmissionForm = ({ defaultValues, onSave, isSaving, submissionId }
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-gray-700">Keywords</label>
-        <div className="flex gap-2">
-          <input
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
             type="text"
             value={keywordInput}
             onChange={(e) => setKeywordInput(e.target.value)}
@@ -137,9 +137,9 @@ export const SubmissionForm = ({ defaultValues, onSave, isSaving, submissionId }
               }
             }}
             placeholder="Type a keyword and press Add"
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-light"
+            className="flex-1"
           />
-          <Button type="button" variant="secondary" size="md" onClick={addKeyword}>
+          <Button type="button" variant="secondary" size="md" onClick={addKeyword} fullWidth className="sm:w-auto">
             Add
           </Button>
         </div>
@@ -151,14 +151,16 @@ export const SubmissionForm = ({ defaultValues, onSave, isSaving, submissionId }
                 className="inline-flex items-center gap-1 bg-brand-muted text-brand text-xs px-2.5 py-1 rounded-full"
               >
                 {kw}
-                <button
+                <Button
                   type="button"
                   onClick={() => removeKeyword(kw)}
-                  className="text-brand/60 hover:text-brand ml-0.5"
+                  variant="ghost"
+                  size="sm"
+                  className="ml-0.5 h-auto min-h-0 p-0 text-brand/60 hover:bg-transparent hover:text-brand"
                   aria-label={`Remove ${kw}`}
                 >
                   ×
-                </button>
+                </Button>
               </span>
             ))}
           </div>

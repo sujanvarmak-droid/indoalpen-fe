@@ -51,15 +51,22 @@ export const submissionHandlers = [
     return HttpResponse.json(
       {
         id: 'sub-new',
+        articleType: 'original-research',
         title: '',
+        runningTitle: '',
         abstract: '',
         keywords: [],
         authors: [],
-        category: '',
-        status: 'DRAFT',
+        fundingSource: '',
+        manuscriptUrl: null,
+        figureUrls: [],
+        videoUrl: null,
+        suggestedReviewers: [],
+        coverLetter: '',
+        declaration: null,
+        status: 'SUBMITTED',
         version: 1,
         createdAt: new Date().toISOString(),
-        files: [],
       },
       { status: 201 }
     );

@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { verifyEmail } from '@/features/auth/authThunks';
 import { ROLE_DASHBOARDS } from '@/constants/roles';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { MountainLoader } from '@/components/ui/MountainLoader';
 
 const VerifyEmail = () => {
@@ -18,7 +19,7 @@ const VerifyEmail = () => {
     dispatch(verifyEmail(token)).then((result) => {
       if (verifyEmail.fulfilled.match(result)) {
         const role = result.payload.role;
-        const dest = ROLE_DASHBOARDS[role] ?? '/dashboard';
+        const dest = ROLE_DASHBOARDS[role] ?? ACCOUNT_ROUTES.DASHBOARD;
         setTimeout(() => navigate(dest, { replace: true }), 2500);
       }
     });

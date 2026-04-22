@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDispatch } from 'react-redux';
 import { useAuth } from '@/hooks/useAuth';
+import { forgotPassword } from '@/features/auth/authThunks';
 import { addToast } from '@/features/ui/uiSlice';
 import { updateMe } from '@/services/userService';
 import { Input } from '@/components/ui/Input';
@@ -58,6 +59,23 @@ const Profile = () => {
     }
   };
 
+  const handleSendResetLink = async () => {
+    if (!user?.email) {
+      dispatch(addToast({ message: 'User email is not available', type: 'error' }));
+      return;
+    }
+    try {
+      const result = await dispatch(forgotPassword({ email: user.email }));
+      if (forgotPassword.fulfilled.match(result)) {
+        dispatch(addToast({ message: 'Password reset link sent to your email', type: 'success' }));
+      } else {
+        dispatch(addToast({ message: 'Failed to send reset link', type: 'error' }));
+      }
+    } catch {
+      dispatch(addToast({ message: 'Failed to send reset link', type: 'error' }));
+    }
+  };
+
   return (
     <div className="max-w-2xl">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 flex items-center gap-5">
@@ -102,6 +120,19 @@ const Profile = () => {
             </Button>
           </div>
         </form>
+      </div>
+
+      <div id="security" className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+        <h3 className="text-base font-semibold text-gray-800 mb-2">Security - Reset Password</h3>
+        <p className="text-sm text-gray-500 mb-4">
+          A reset link will be sent to <span className="font-medium text-gray-700">{user?.email ?? 'your email'}</span>.
+          Use that link to set a new password.
+        </p>
+        <div className="flex justify-end">
+          <Button type="button" variant="primary" onClick={handleSendResetLink}>
+            Send Password Reset Link
+          </Button>
+        </div>
       </div>
     </div>
   );

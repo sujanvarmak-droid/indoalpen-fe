@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import { ACCEPTED_MIME_TYPES } from '@/utils/fileValidation';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 
 export const FileUploader = ({ submissionId, existingFiles = [] }) => {
@@ -105,18 +106,20 @@ export const FileUploader = ({ submissionId, existingFiles = [] }) => {
       )}
 
       {status === 'done' && (
-        <div className="flex items-center gap-2 text-success text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-success">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
           File uploaded successfully.
-          <button
+          <Button
             type="button"
             onClick={reset}
-            className="ml-2 text-xs text-gray-400 hover:text-gray-600 underline"
+            variant="ghost"
+            size="sm"
+            className="px-1 text-xs text-gray-500 hover:text-gray-700"
           >
             Upload another
-          </button>
+          </Button>
         </div>
       )}
 

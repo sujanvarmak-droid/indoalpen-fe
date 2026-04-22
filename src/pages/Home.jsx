@@ -1,7 +1,9 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 const categories = [
   {
@@ -44,15 +46,33 @@ const carouselSlides = [
   { id: 7, categoryId: 'science-kids',label: 'Science for Kids',                     sublabel: 'Education & Discovery',   img: null },
 ];
 
-const VISIBLE = 3; // cards visible at once on desktop
-
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 // ── Carousel ──────────────────────────────────────────────────────────────────
 function CategoryCarousel({ onSlideClick }) {
   const [current, setCurrent] = useState(0);
+  const [visible, setVisible] = useState(3);
   const total = carouselSlides.length;
-  const maxIndex = total - VISIBLE;
+  const maxIndex = Math.max(0, total - visible);
+
+  useEffect(() => {
+    const updateVisible = () => {
+      if (window.innerWidth < 640) {
+        setVisible(1);
+      } else if (window.innerWidth < 1024) {
+        setVisible(2);
+      } else {
+        setVisible(3);
+      }
+    };
+    updateVisible();
+    window.addEventListener('resize', updateVisible);
+    return () => window.removeEventListener('resize', updateVisible);
+  }, []);
+
+  useEffect(() => {
+    setCurrent((idx) => Math.min(idx, maxIndex));
+  }, [maxIndex]);
 
   const prev = () => setCurrent((c) => Math.max(c - 1, 0));
   const next = () => setCurrent((c) => Math.min(c + 1, maxIndex));
@@ -70,7 +90,7 @@ function CategoryCarousel({ onSlideClick }) {
         onClick={prev}
         disabled={current === 0}
         aria-label="Previous"
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center text-brand hover:bg-brand-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="absolute left-2 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-brand shadow transition-colors hover:bg-brand-muted disabled:cursor-not-allowed disabled:opacity-30 sm:flex"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -81,14 +101,14 @@ function CategoryCarousel({ onSlideClick }) {
       <div className="overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-in-out gap-5"
-          style={{ transform: `translateX(calc(-${current} * (100% / ${VISIBLE}) - ${current} * (20px / ${VISIBLE})))` }}
+          style={{ transform: `translateX(calc(-${current} * (100% / ${visible}) - ${current} * (20px / ${visible})))` }}
         >
           {carouselSlides.map((slide) => (
             <button
               key={slide.id}
               onClick={() => onSlideClick(slide.categoryId)}
               className="shrink-0 group rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-brand-light"
-              style={{ width: `calc((100% - ${(VISIBLE - 1) * 20}px) / ${VISIBLE})` }}
+              style={{ width: `calc((100% - ${(visible - 1) * 20}px) / ${visible})` }}
             >
               {/* Image area */}
               <div className="relative bg-brand-muted h-44 flex items-center justify-center overflow-hidden">
@@ -122,7 +142,7 @@ function CategoryCarousel({ onSlideClick }) {
         onClick={next}
         disabled={current >= maxIndex}
         aria-label="Next"
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-9 h-9 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center text-brand hover:bg-brand-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="absolute right-2 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-brand shadow transition-colors hover:bg-brand-muted disabled:cursor-not-allowed disabled:opacity-30 sm:flex"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -182,34 +202,29 @@ export default function Home() {
       {/* Hero / Search */}
       <div className="bg-brand-muted border-b border-gray-200 py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-semibold text-brand mb-1">
-            Search for peer-reviewed journal articles and book chapters
-            <span className="text-brand-light font-normal"> (including open access content)</span>
-          </h1>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <input
-              type="text"
-              placeholder="Find articles with these terms"
-              className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[180px] focus:outline-none focus:ring-2 focus:ring-brand-light"
-            />
-            <input
-              type="text"
-              placeholder="In this journal or book title"
-              className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[180px] focus:outline-none focus:ring-2 focus:ring-brand-light"
-            />
-            <input
-              type="text"
-              placeholder="Author(s)"
-              className="border border-gray-300 rounded px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-brand-light"
-            />
-            <Button variant="primary" size="md">Search</Button>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <h1 className="text-2xl font-semibold text-brand mb-1">
+              Search for peer-reviewed journal articles and book chapters
+              <span className="text-brand-light font-normal"> (including open access content)</span>
+            </h1>
+            <Link to={ACCOUNT_ROUTES.NEW_SUBMISSION} className="shrink-0">
+              <Button variant="primary" size="md" fullWidth className="sm:w-auto">
+                Publish Journey
+              </Button>
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_220px_auto]">
+            <Input type="text" placeholder="Find articles with these terms" />
+            <Input type="text" placeholder="In this journal or book title" />
+            <Input type="text" placeholder="Author(s)" />
+            <Button variant="primary" size="md" fullWidth className="lg:w-auto">Search</Button>
           </div>
         </div>
       </div>
 
       {/* Carousel */}
       <div className="border-b border-gray-100 bg-white py-8">
-        <div className="max-w-6xl mx-auto px-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Browse by Topic</p>
           <CategoryCarousel onSlideClick={(categoryId) => navigate(`/browse?category=${categoryId}`)} />
         </div>
@@ -250,19 +265,21 @@ export default function Home() {
             ref={(el) => (sectionRefs.current[cat.id] = el)}
             className="border border-gray-200 rounded-lg overflow-hidden scroll-mt-28"
           >
-            <div className="bg-brand px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center justify-between bg-brand px-4 py-4 sm:px-6">
               <h3 className="text-base font-semibold text-white">{cat.name}</h3>
-              <button
+              <Button
                 onClick={() => navigate(`/browse?category=${cat.id}`)}
-                className="text-xs text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+                variant="ghost"
+                size="sm"
+                className="px-0 text-xs text-white/80 hover:bg-transparent hover:text-white"
               >
                 Browse all &rsaquo;
-              </button>
+              </Button>
             </div>
 
             {cat.subcategories.length > 0 ? (
-              <div className="flex min-h-[220px]">
-                <aside className="w-64 shrink-0 border-r border-gray-200 bg-brand-muted/40">
+              <div className="flex min-h-[220px] flex-col md:flex-row">
+                <aside className="shrink-0 border-b border-gray-200 bg-brand-muted/40 md:w-64 md:border-b-0 md:border-r">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 pt-4 pb-2">
                     Subcategories
                   </p>
@@ -279,7 +296,7 @@ export default function Home() {
                     ))}
                   </ul>
                 </aside>
-                <div className="flex-1 p-8 flex flex-col items-center justify-center text-center">
+                <div className="flex flex-1 flex-col items-center justify-center p-6 text-center sm:p-8">
                   <div className="w-12 h-12 rounded-full bg-brand-muted flex items-center justify-center mb-3">
                     <svg className="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -311,7 +328,7 @@ export default function Home() {
               <Link
                 key={letter}
                 to={`/browse?letter=${letter}`}
-                className="w-8 h-8 flex items-center justify-center text-sm font-medium text-brand-light border border-brand-light rounded hover:bg-brand-muted transition-colors"
+                className="inline-flex h-8 w-8 items-center justify-center rounded border border-brand-light text-sm font-medium text-brand-light transition-colors hover:bg-brand-muted"
               >
                 {letter}
               </Link>
@@ -341,13 +358,13 @@ export default function Home() {
 
         {/* CTA for unauthenticated */}
         {!isAuthenticated && (
-          <div className="text-center bg-brand rounded-lg p-8">
+          <div className="rounded-lg bg-brand p-6 text-center sm:p-8">
             <h3 className="text-xl font-semibold text-white mb-2">Ready to publish your research?</h3>
             <p className="text-brand-muted text-sm mb-4">Join thousands of researchers sharing their work on IndoAlpen Verlag.</p>
-            <div className="flex justify-center gap-3">
-              <Link to="/signup"><Button variant="secondary" size="lg">Get Started</Button></Link>
+            <div className="flex flex-col justify-center gap-3 sm:flex-row">
+              <Link to="/signup"><Button variant="secondary" size="lg" fullWidth>Get Started</Button></Link>
               <Link to="/login">
-                <Button variant="ghost" size="lg" className="text-white border-white hover:bg-white/10">Sign In</Button>
+                <Button variant="ghost" size="lg" fullWidth className="border-white text-white hover:bg-white/10">Sign In</Button>
               </Link>
             </div>
           </div>

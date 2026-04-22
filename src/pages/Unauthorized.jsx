@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { Button } from '@/components/ui/Button';
 
 const Unauthorized = () => {
@@ -18,7 +19,7 @@ const Unauthorized = () => {
             try {
               navigate(-1);
             } catch {
-              navigate('/dashboard');
+              navigate(ACCOUNT_ROUTES.DASHBOARD);
             }
           }}
         >

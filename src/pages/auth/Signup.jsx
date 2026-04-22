@@ -38,7 +38,7 @@ const Signup = () => {
         fullName:     data.fullName,
         email:        data.email,
         password:     data.password,
-        consentGiven: true,
+        consentGiven: data.consentGiven,
       })
     );
     if (registerUser.fulfilled.match(result)) {
@@ -56,7 +56,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white shadow rounded-xl p-8">
+    <div className="mx-auto mt-8 max-w-md rounded-xl bg-white p-5 shadow sm:mt-20 sm:p-8">
       <h1 className="text-2xl font-bold text-brand mb-2">Create an account</h1>
       <p className="text-sm text-gray-500 mb-6">Join IndoAlpen Verlag and start submitting your research</p>
 

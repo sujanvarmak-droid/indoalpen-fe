@@ -1,17 +1,22 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleSidebar } from '@/features/ui/uiSlice';
+import { setSidebarOpen, toggleSidebar } from '@/features/ui/uiSlice';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PERMISSIONS } from '@/constants/permissions';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { getMe as getMyAccount } from '@/services/userService';
 import { Toast } from '@/components/ui/Toast';
+import { SiteFooter } from '@/components/layout/SiteFooter';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 
 const NAV_LINKS = [
-  { label: 'Dashboard',      path: '/dashboard',       permission: PERMISSIONS.VIEW_DASHBOARD, icon: '📊' },
-  { label: 'New Submission', path: '/submissions/new', permission: PERMISSIONS.SUBMIT_PAPER,   icon: '📝' },
-  { label: 'My Submissions', path: '/dashboard',       permission: PERMISSIONS.SUBMIT_PAPER,   icon: '📂' },
-  { label: 'Profile',        path: '/profile',         permission: PERMISSIONS.VIEW_DASHBOARD, icon: '👤' },
+  { label: 'Dashboard',      path: ACCOUNT_ROUTES.DASHBOARD,      permission: PERMISSIONS.VIEW_DASHBOARD, icon: '📊' },
+  { label: 'New Submission', path: ACCOUNT_ROUTES.NEW_SUBMISSION, permission: PERMISSIONS.SUBMIT_PAPER,   icon: '📝' },
+  { label: 'My Submissions', path: ACCOUNT_ROUTES.DASHBOARD,      permission: PERMISSIONS.SUBMIT_PAPER,   icon: '📂' },
+  { label: 'Profile',        path: ACCOUNT_ROUTES.PROFILE,        permission: PERMISSIONS.VIEW_DASHBOARD, icon: '👤' },
   { label: 'Review Queue',   path: null,               permission: PERMISSIONS.REVIEW_PAPER,   icon: '🔍', disabled: true, badge: 'Phase 2' },
   { label: 'Admin Panel',    path: null,               permission: PERMISSIONS.MANAGE_USERS,   icon: '⚙️', disabled: true, badge: 'Phase 2' },
 ];
@@ -35,15 +40,74 @@ export const PrivateLayout = () => {
   const { user, logout } = useAuth();
   const { hasPermission } = usePermissions();
   const location = useLocation();
+  const [notifications, setNotifications] = useState([]);
+  const [notificationError, setNotificationError] = useState(null);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const pageTitle = NAV_LINKS.find((l) => l.path === location.pathname)?.label ?? 'IndoAlpenVerlag';
+  const closeSidebar = () => dispatch(setSidebarOpen(false));
+  const unreadCount = useMemo(
+    () => notifications.filter((item) => !item.read).length,
+    [notifications]
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      dispatch(setSidebarOpen(false));
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      dispatch(setSidebarOpen(false));
+    }
+  }, [location.pathname, dispatch]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadMe = async () => {
+      try {
+        const profile = await getMyAccount();
+        const feed = Array.isArray(profile?.notifications) ? profile.notifications : [];
+        if (isMounted) {
+          setNotifications(feed);
+          setNotificationError(null);
+        }
+      } catch {
+        if (isMounted) {
+          setNotifications([]);
+          setNotificationError('Failed to load notifications');
+        }
+      }
+    };
+
+    if (user) {
+      loadMe();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  useEffect(() => {
+    setIsNotificationOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen flex bg-gray-100">
+      <div
+        className={cn(
+          'fixed inset-0 z-30 bg-black/40 transition-opacity lg:hidden',
+          sidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        onClick={closeSidebar}
+        aria-hidden="true"
+      />
       <aside
         className={cn(
-          'bg-brand text-white flex flex-col transition-all duration-300 shrink-0',
-          sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'
+          'fixed inset-y-0 left-0 z-40 w-64 bg-brand text-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 lg:shadow-none',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="p-5 border-b border-white/10">
@@ -108,42 +172,78 @@ export const PrivateLayout = () => {
         </nav>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex min-w-0 flex-col">
         <header className="bg-white border-b border-gray-200 px-4 h-14 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
-            <button
+            <Button
               onClick={() => dispatch(toggleSidebar())}
-              className="p-2 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              variant="ghost"
+              size="sm"
+              className="p-2 text-gray-500 hover:text-gray-700"
               aria-label="Toggle sidebar"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-            </button>
+            </Button>
             <h1 className="text-base font-semibold text-gray-800">{pageTitle}</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              className="p-2 rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-              title="Notifications (Phase 2)"
-              aria-label="Notifications"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-            <button
+          <div className="flex items-center gap-3 relative">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 text-gray-400 hover:text-gray-600 relative"
+                onClick={() => setIsNotificationOpen((open) => !open)}
+                title="Notifications"
+                aria-label="Notifications"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-medium leading-none text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                ) : null}
+              </Button>
+              {isNotificationOpen ? (
+                <div className="absolute right-0 mt-2 w-80 rounded-md border border-gray-200 bg-white p-3 shadow-lg z-50">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Notifications</p>
+                  {notificationError ? (
+                    <p className="text-sm text-red-500">{notificationError}</p>
+                  ) : notifications.length === 0 ? (
+                    <p className="text-sm text-gray-500">No notifications found in `/users/me`.</p>
+                  ) : (
+                    <div className="max-h-72 overflow-auto space-y-2">
+                      {notifications.map((item, idx) => (
+                        <div key={item.id ?? idx} className="rounded-md border border-gray-100 px-3 py-2">
+                          <p className="text-sm text-gray-800">{item.title ?? item.message ?? 'Notification'}</p>
+                          {item.description ? (
+                            <p className="text-xs text-gray-500 mt-1">{item.description}</p>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+            <Button
               onClick={logout}
-              className="text-sm text-gray-600 hover:text-brand transition-colors px-2 py-1 rounded hover:bg-gray-100"
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-brand"
             >
               Logout
-            </button>
+            </Button>
           </div>
         </header>
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 overflow-auto p-4 sm:p-6">
           <Outlet />
         </main>
+        <SiteFooter />
       </div>
 
       <Toast />

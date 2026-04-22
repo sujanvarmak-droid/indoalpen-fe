@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -22,7 +23,7 @@ const Login = () => {
     formState: { errors },
   } = useForm({ resolver: zodResolver(schema) });
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) return <Navigate to={ACCOUNT_ROUTES.DASHBOARD} replace />;
 
   const onSubmit = async (data) => {
     const result = await login(data);
@@ -42,7 +43,7 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white shadow rounded-xl p-8">
+    <div className="mx-auto mt-8 max-w-md rounded-xl bg-white p-5 shadow sm:mt-20 sm:p-8">
       <h1 className="text-2xl font-bold text-brand mb-2">Welcome back</h1>
       <p className="text-sm text-gray-500 mb-6">Sign in to your IndoAlpen Verlag account</p>
 

@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [react()],
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
   server: {
-    port: 3000,
-    proxy: { '/': { target: 'http://98.130.107.197:8080', changeOrigin: true } }
+    port: 3000
   }
 });

@@ -9,6 +9,7 @@ import {
 import { selectSubmissionById } from '@/features/submissions/submissionsSlice';
 import { addToast } from '@/features/ui/uiSlice';
 import { SUBMISSION_STATUS } from '@/constants/submissionStatus';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { SubmissionForm } from '@/components/submission/SubmissionForm';
 import { FileUploader } from '@/components/submission/FileUploader';
 import { Button } from '@/components/ui/Button';
@@ -47,7 +48,7 @@ const EditSubmission = () => {
     setShowConfirmModal(false);
     if (submitForReview.fulfilled.match(result)) {
       dispatch(addToast({ message: 'Paper submitted for review!', type: 'success' }));
-      navigate('/dashboard', { replace: true });
+      navigate(ACCOUNT_ROUTES.DASHBOARD, { replace: true });
     } else {
       dispatch(addToast({ message: 'Submission failed. Please try again.', type: 'error' }));
     }
@@ -65,7 +66,7 @@ const EditSubmission = () => {
     return (
       <div className="flex flex-col items-center gap-4 mt-20 text-center">
         <p className="text-gray-500">Submission not found.</p>
-        <Button variant="primary" onClick={() => navigate('/dashboard')}>
+        <Button variant="primary" onClick={() => navigate(ACCOUNT_ROUTES.DASHBOARD)}>
           Back to Dashboard
         </Button>
       </div>
@@ -85,7 +86,7 @@ const EditSubmission = () => {
           <p className="text-sm text-gray-600">
             This submission has been submitted and can no longer be edited.
           </p>
-          <Button variant="secondary" onClick={() => navigate('/dashboard')}>
+          <Button variant="secondary" onClick={() => navigate(ACCOUNT_ROUTES.DASHBOARD)}>
             Back to Dashboard
           </Button>
         </div>

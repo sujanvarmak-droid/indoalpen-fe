@@ -5,6 +5,7 @@ import { fetchMySubmissions } from '@/features/submissions/submissionThunks';
 import { selectAllSubmissions } from '@/features/submissions/submissionsSlice';
 import { SUBMISSION_STATUS } from '@/constants/submissionStatus';
 import { PERMISSIONS } from '@/constants/permissions';
+import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
@@ -34,10 +35,10 @@ const AuthorDashboard = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-bold text-gray-900">My Submissions</h1>
         <PermissionGate permission={PERMISSIONS.SUBMIT_PAPER}>
-          <Button variant="primary" onClick={() => navigate('/submissions/new')}>
+          <Button variant="primary" onClick={() => navigate(ACCOUNT_ROUTES.AUTHOR_PROFILE)} fullWidth className="sm:w-auto">
             + New Submission
           </Button>
         </PermissionGate>
@@ -53,13 +54,13 @@ const AuthorDashboard = () => {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <p className="text-gray-500 text-sm">No submissions yet.</p>
-          <Button variant="primary" onClick={() => navigate('/submissions/new')}>
+          <Button variant="primary" onClick={() => navigate(ACCOUNT_ROUTES.AUTHOR_PROFILE)} fullWidth className="sm:w-auto">
             Create your first submission
           </Button>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table className="min-w-[760px] w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3">Title</th>
@@ -87,7 +88,7 @@ const AuthorDashboard = () => {
                       variant="secondary"
                       size="sm"
                       disabled={sub.status !== SUBMISSION_STATUS.DRAFT}
-                      onClick={() => navigate(`/submissions/${sub.id}/edit`)}
+                      onClick={() => navigate(ACCOUNT_ROUTES.EDIT_SUBMISSION(sub.id))}
                     >
                       Edit
                     </Button>
@@ -100,7 +101,7 @@ const AuthorDashboard = () => {
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           <Button
             variant="ghost"
             size="sm"
@@ -110,17 +111,19 @@ const AuthorDashboard = () => {
             Previous
           </Button>
           {Array.from({ length: totalPages }, (_, i) => (
-            <button
+            <Button
               key={i}
               onClick={() => setPage(i)}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              size="sm"
+              variant={i === page ? 'primary' : 'ghost'}
+              className={`min-w-9 ${
                 i === page
-                  ? 'bg-brand text-white'
+                  ? ''
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               {i + 1}
-            </button>
+            </Button>
           ))}
           <Button
             variant="ghost"

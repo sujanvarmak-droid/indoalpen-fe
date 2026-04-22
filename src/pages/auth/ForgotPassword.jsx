@@ -31,7 +31,7 @@ const ForgotPassword = () => {
 
   if (submitted) {
     return (
-      <div className="max-w-md mx-auto mt-20 bg-white shadow rounded-xl p-8 text-center">
+      <div className="mx-auto mt-8 max-w-md rounded-xl bg-white p-5 text-center shadow sm:mt-20 sm:p-8">
         <div className="w-12 h-12 bg-brand-muted rounded-full flex items-center justify-center mx-auto mb-4">
           <svg className="h-6 w-6 text-brand-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round"
@@ -50,7 +50,7 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white shadow rounded-xl p-8">
+    <div className="mx-auto mt-8 max-w-md rounded-xl bg-white p-5 shadow sm:mt-20 sm:p-8">
       <h1 className="text-2xl font-bold text-brand mb-2">Reset your password</h1>
       <p className="text-sm text-gray-500 mb-6">
         Enter your email address and we'll send you a reset link.

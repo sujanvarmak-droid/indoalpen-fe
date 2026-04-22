@@ -1,6 +1,9 @@
 const normalizeBaseUrl = (value) => {
   if (!value) return value;
-  return value.endsWith('/') ? value.slice(0, -1) : value;
+  const withoutTrailingSlash = value.endsWith('/') ? value.slice(0, -1) : value;
+  return withoutTrailingSlash.endsWith('/api')
+    ? withoutTrailingSlash
+    : `${withoutTrailingSlash}/api`;
 };
 
 const ENV = {

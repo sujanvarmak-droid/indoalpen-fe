@@ -1,5 +1,10 @@
+const normalizeBaseUrl = (value) => {
+  if (!value) return value;
+  return value.endsWith('/') ? value.slice(0, -1) : value;
+};
+
 const ENV = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  API_BASE_URL: normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL),
   APP_ENV: import.meta.env.VITE_APP_ENV ?? 'development',
   ENABLE_MSW: import.meta.env.VITE_ENABLE_MSW === 'true',
 };

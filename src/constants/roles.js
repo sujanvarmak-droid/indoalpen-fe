@@ -9,7 +9,7 @@ export const ROLES = {
 };
 
 export const ROLE_DASHBOARDS = {
-  AUTHOR:   ACCOUNT_ROUTES.DASHBOARD,
+  AUTHOR:   '/',
   REVIEWER: '/reviewer/dashboard',
   EDITOR:   '/editor/dashboard',
   ADMIN:    '/admin/dashboard',

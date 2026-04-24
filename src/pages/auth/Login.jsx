@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { ROLE_DASHBOARDS } from '@/constants/roles';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -14,7 +15,7 @@ const schema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, status } = useAuth();
+  const { login, isAuthenticated, status, user } = useAuth();
 
   const {
     register,
@@ -23,7 +24,10 @@ const Login = () => {
     formState: { errors },
   } = useForm({ resolver: zodResolver(schema) });
 
-  if (isAuthenticated) return <Navigate to={ACCOUNT_ROUTES.DASHBOARD} replace />;
+  if (isAuthenticated) {
+    const dest = ROLE_DASHBOARDS[user?.role] ?? ACCOUNT_ROUTES.DASHBOARD;
+    return <Navigate to={dest} replace />;
+  }
 
   const onSubmit = async (data) => {
     const result = await login(data);

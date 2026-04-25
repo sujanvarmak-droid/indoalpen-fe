@@ -12,6 +12,7 @@ export const PublicLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [profileName, setProfileName] = useState('');
   const accountMenuRef = useRef(null);
 
   const navLinks = [
@@ -29,7 +30,7 @@ export const PublicLayout = () => {
     () => notifications.filter((item) => !item.read).length,
     [notifications]
   );
-  const displayName = user?.name ?? user?.fullName ?? user?.email ?? 'User';
+  const displayName = user?.name ?? user?.fullName ?? profileName ?? user?.email ?? 'User';
 
   useEffect(() => {
     let isMounted = true;
@@ -37,12 +38,21 @@ export const PublicLayout = () => {
       try {
         const profile = await getMyAccount();
         const feed = Array.isArray(profile?.notifications) ? profile.notifications : [];
+        const firstLast = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim();
+        const resolvedName =
+          profile?.name ??
+          profile?.fullName ??
+          (firstLast || undefined) ??
+          profile?.username ??
+          '';
         if (isMounted) {
           setNotifications(feed);
+          setProfileName(resolvedName);
         }
       } catch {
         if (isMounted) {
           setNotifications([]);
+          setProfileName('');
         }
       }
     };

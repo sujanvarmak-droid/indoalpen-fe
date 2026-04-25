@@ -41,15 +41,14 @@ const categories = [
   },
 ];
 
-// 7 carousel slides — images to be updated later
 const carouselSlides = [
-  { id: 1, categoryId: 'engineering', label: 'Graduate Research',                    sublabel: 'Engineering Sciences',   img: null },
-  { id: 2, categoryId: 'engineering', label: 'Engineering Innovation & Research',    sublabel: 'Engineering Sciences',   img: null },
-  { id: 3, categoryId: 'medical',     label: 'Translational Biomedical Engineering', sublabel: 'Medical Sciences',        img: null },
-  { id: 4, categoryId: 'medical',     label: 'Hearing Implant Research',             sublabel: 'Medical Sciences',        img: null },
-  { id: 5, categoryId: 'medical',     label: 'Dental Implant Research',              sublabel: 'Medical Sciences',        img: null },
-  { id: 6, categoryId: 'management',  label: 'Management Studies',                   sublabel: 'Business & Leadership',   img: null },
-  { id: 7, categoryId: 'science-kids',label: 'Science for Kids',                     sublabel: 'Education & Discovery',   img: null },
+  { id: 1, categoryId: 'engineering', label: 'Graduate Research',                    sublabel: 'Engineering Sciences',   img: '/Pictures/graduate-research.jpg' },
+  { id: 2, categoryId: 'engineering', label: 'Engineering Innovation & Research',    sublabel: 'Engineering Sciences',   img: '/Pictures/engineering-innovation.jpg' },
+  { id: 3, categoryId: 'medical',     label: 'Translational Biomedical Engineering', sublabel: 'Medical Sciences',        img: '/Pictures/translational-biomedical.jpg' },
+  { id: 4, categoryId: 'medical',     label: 'Hearing Implant Research',             sublabel: 'Medical Sciences',        img: '/Pictures/hearing-implant.jpg' },
+  { id: 5, categoryId: 'medical',     label: 'Dental Implant Research',              sublabel: 'Medical Sciences',        img: '/Pictures/dental-implant.jpg' },
+  { id: 6, categoryId: 'management',  label: 'Management Studies',                   sublabel: 'Business & Leadership',   img: '/Pictures/management.jpg' },
+  { id: 7, categoryId: 'science-kids',label: 'Science for Kids',                     sublabel: 'Education & Discovery',   img: '/Pictures/science-kids.jpg' },
 ];
 
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');

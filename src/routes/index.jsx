@@ -48,10 +48,10 @@ export const AppRoutes = () => (
         <Route path="/verify-email-pending" element={<VerifyEmailPending />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route
-          path="/about-sciencedirect"
+          path="/about-IndoAlpen Verlag"
           element={
             <FooterInfoPage
-              title="About ScienceDirect"
+              title="About IndoAlpen Verlag"
               description="This section will include a brief overview of our platform, mission, and publishing ecosystem."
             />
           }

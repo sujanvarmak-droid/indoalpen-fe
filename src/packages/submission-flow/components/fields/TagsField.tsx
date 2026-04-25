@@ -64,22 +64,22 @@ export function TagsField({ field, namePrefix }: FieldProps) {
               <div
                 className={cx(
                   inputBase,
-                  'flex min-h-[44px] flex-wrap items-center gap-2 p-2',
-                  isFocused ? 'ring-2 ring-blue-500 border-transparent' : '',
+                  'flex min-h-[42px] flex-wrap items-center gap-1.5 p-1.5',
+                  isFocused ? 'ring-2 ring-brand-light' : '',
                   error ? inputError : inputNormal
                 )}
               >
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-700"
+                    className="inline-flex items-center gap-1 rounded-full bg-brand-muted px-2.5 py-1 text-xs text-brand"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
                       aria-label={`Remove ${tag}`}
-                      className="text-blue-500 hover:text-blue-700"
+                      className="text-brand/70 transition-colors hover:text-brand"
                     >
                       ×
                     </button>
@@ -92,12 +92,12 @@ export function TagsField({ field, namePrefix }: FieldProps) {
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder={tags.length === 0 ? field.placeholder : 'Add another...'}
-                  className="min-w-[120px] flex-1 border-none bg-transparent text-sm outline-none"
+                  className="min-w-[90px] flex-1 border-none bg-transparent text-sm outline-none"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700"
+                  className="rounded-md bg-brand px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-brand-light"
                 >
                   Add
                 </button>

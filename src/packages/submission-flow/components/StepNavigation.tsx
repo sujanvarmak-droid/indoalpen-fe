@@ -24,10 +24,10 @@ export function StepNavigation({
   labels,
 }: StepNavigationProps) {
   return (
-    <div className="mt-10 flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+    <div className="mt-8 flex flex-col-reverse gap-2.5 border-t border-gray-100 pt-5 sm:mt-9 sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:pt-6">
       <div className="w-full sm:w-auto">
         {canGoBack ? (
-          <Button type="button" onClick={onBack} variant="secondary" fullWidth className="sm:w-auto">
+          <Button type="button" onClick={onBack} variant="secondary" fullWidth size="md" className="sm:w-auto">
             {labels?.backButton ?? '← Back'}
           </Button>
         ) : (
@@ -42,13 +42,14 @@ export function StepNavigation({
             onClick={onSubmit}
             disabled={isLoading}
             loading={isLoading}
+            size="md"
             fullWidth
             className="sm:w-auto"
           >
             {isLoading ? 'Submitting...' : labels?.submitButton ?? 'Submit'}
           </Button>
         ) : (
-          <Button type="button" onClick={onNext} fullWidth className="sm:w-auto">
+          <Button type="button" onClick={onNext} fullWidth size="md" className="sm:w-auto">
             {labels?.nextButton ?? 'Next →'}
           </Button>
         )}

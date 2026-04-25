@@ -97,18 +97,22 @@ function InlineMode({
   return (
     <FlowProvider config={configWithCallbacks} runtime={runtime}>
       <div className={`w-full bg-gradient-to-b from-brand-muted/40 to-white ${className ?? ''}`}>
-        <div className="mx-auto w-full max-w-5xl px-3 sm:px-4 lg:px-6">
+        <div className="mx-auto w-full max-w-6xl px-4 pt-3 sm:px-6 sm:pt-5 lg:px-8">
           <Stepper steps={configWithCallbacks.steps} />
         </div>
-        <div className="mx-auto mt-4 w-full max-w-2xl px-3 pb-8 sm:mt-6 sm:px-4 sm:pb-12">
-          {onCancel ? (
-            <div className="mb-4 flex justify-end">
-              <button onClick={onCancel} className="text-sm text-gray-500 transition-colors hover:text-gray-700">
-                ✕ {labels?.cancelButton ?? 'Cancel'}
-              </button>
-            </div>
-          ) : null}
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-md sm:p-6">
+        <div className="mx-auto mt-5 w-full max-w-3xl px-4 pb-10 sm:mt-7 sm:px-6 sm:pb-14">
+          <div className="rounded-3xl border border-gray-200/90 bg-white/95 p-5 shadow-lg shadow-gray-200/50 backdrop-blur-sm sm:p-7">
+            {onCancel ? (
+              <div className="mb-4 flex justify-end sm:mb-5">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 sm:text-sm"
+                >
+                  ✕ {labels?.cancelButton ?? 'Cancel'}
+                </button>
+              </div>
+            ) : null}
             <StepRenderer config={configWithCallbacks} />
           </div>
         </div>

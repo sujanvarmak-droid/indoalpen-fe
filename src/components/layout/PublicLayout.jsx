@@ -15,7 +15,7 @@ export const PublicLayout = () => {
   const accountMenuRef = useRef(null);
 
   const navLinks = [
-    { label: 'Journals & Books', to: '/' },
+    { label: 'Journals', to: '/browse?type=journals' },
     { label: 'Browse', to: '/browse' },
   ];
   const accountLinks = [
@@ -109,9 +109,25 @@ export const PublicLayout = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setAccountMenuOpen((open) => !open)}
-                      className={`text-sm font-medium text-brand hover:text-brand-light relative ${unreadCount > 0 ? 'pr-7' : ''}`}
+                      className={`relative inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-brand-light ${unreadCount > 0 ? 'pr-7' : ''}`}
                     >
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-muted text-brand">
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path
+                            fillRule="evenodd"
+                            d="M10 2a4 4 0 100 8 4 4 0 000-8zM3 16a7 7 0 1114 0v.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16.5V16z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </span>
                       {displayName}
+                      <svg className="h-3.5 w-3.5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {unreadCount > 0 ? (
                         <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-medium leading-none text-white">
                           {unreadCount > 9 ? '9+' : unreadCount}
@@ -145,12 +161,19 @@ export const PublicLayout = () => {
                             {link.label}
                           </Link>
                         ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAccountMenuOpen(false);
+                            logout();
+                          }}
+                          className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                        >
+                          Sign Out
+                        </button>
                       </div>
                     ) : null}
                   </div>
-                  <Button variant="secondary" size="sm" onClick={logout}>
-                    Sign Out
-                  </Button>
                 </>
               ) : (
                 <>
@@ -214,6 +237,16 @@ export const PublicLayout = () => {
                     {link.label}
                   </Link>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="rounded-md px-3 py-2 text-left text-red-600 hover:bg-red-50"
+                >
+                  Sign Out
+                </button>
               </>
             )}
           </nav>

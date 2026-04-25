@@ -44,6 +44,13 @@ const SAMPLE_PUBLICATIONS = {
   ],
 };
 
+const normalizeType = (value = '') => {
+  const normalized = value.toLowerCase().trim().replace(/\s+/g, '-');
+  if (normalized === 'journal') return 'journals';
+  if (normalized === 'book') return 'books';
+  return normalized;
+};
+
 function FilterSection({ title, children }) {
   const [open, setOpen] = useState(true);
   return (
@@ -88,6 +95,7 @@ export default function Browse() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const hasLetterParam = searchParams.has('letter');
   const activeLetter = searchParams.get('letter') || 'A';
   const activeCategory = searchParams.get('category') || '';
   const selectedTypes = searchParams.getAll('type');
@@ -120,10 +128,14 @@ export default function Browse() {
     });
   };
 
-  const publications = SAMPLE_PUBLICATIONS[activeLetter] || [];
+  const allPublications = Object.values(SAMPLE_PUBLICATIONS).flat();
+  const hasFilterSelection = selectedTypes.length > 0 || selectedAccess.length > 0 || Boolean(activeCategory);
+  const publications = !hasLetterParam && hasFilterSelection
+    ? allPublications
+    : (SAMPLE_PUBLICATIONS[activeLetter] || []);
 
   const filteredPublications = publications.filter((pub) => {
-    const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(pub.type.toLowerCase().replace(' ', '-'));
+    const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(normalizeType(pub.type));
     const accessMatch = selectedAccess.length === 0 || selectedAccess.includes(pub.access);
     return typeMatch && accessMatch;
   });
@@ -273,7 +285,7 @@ export default function Browse() {
 
             {/* Section heading */}
             <h2 className="text-lg font-semibold text-brand border-b border-gray-200 pb-2 mb-4">
-              {activeLetter}
+              {!hasLetterParam && hasFilterSelection ? 'All' : activeLetter}
             </h2>
 
             {/* Publications list */}

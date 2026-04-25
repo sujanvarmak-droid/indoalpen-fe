@@ -60,11 +60,11 @@ export function FormStep({ step, config, resolvedSteps }: StepComponentProps) {
         }}
         noValidate
       >
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">{step.title}</h2>
-          {step.description ? <p className="mt-1 text-sm text-gray-500">{step.description}</p> : null}
+        <div className="mb-8 border-b border-gray-100 pb-5">
+          <h2 className="text-2xl font-semibold tracking-tight text-gray-900">{step.title}</h2>
+          {step.description ? <p className="mt-2 text-sm leading-6 text-gray-500">{step.description}</p> : null}
         </div>
-        <div className="space-y-5">
+        <div className="space-y-6">
           {fields.map((field) => (
             <FieldRenderer key={field.id} field={field} />
           ))}

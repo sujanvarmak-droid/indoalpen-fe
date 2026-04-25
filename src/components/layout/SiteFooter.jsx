@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const footerLinks = [
-  { label: 'About ScienceDirect', to: '/about-sciencedirect' },
+  { label: 'About IndoAlpen Verlag', to: '/about-IndoAlpen Verlag' },
   { label: 'Remote access', to: '/remote-access' },
   { label: 'Contact and support', to: '/contact-support' },
   { label: 'Terms and conditions', to: '/terms-and-conditions' },
@@ -24,7 +24,7 @@ export const SiteFooter = () => (
         ))}
       </div>
       <p className="mt-3 text-xs text-gray-600 leading-relaxed">
-        All content on this site: Copyright © 2026 Elsevier B.V., its licensors, and contributors.
+        All content on this site: Copyright © 2026 IndoAlplen, its licensors, and contributors.
         All rights are reserved.
       </p>
     </div>

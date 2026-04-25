@@ -52,7 +52,7 @@ export function RepeatableSection({ field, namePrefix }: RepeatableSectionProps)
     <div>
       <label className={labelBase}>{field.label}</label>
       {fields.map((item, index) => (
-        <div key={item.id} className="relative mt-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div key={item.id} className="relative mt-3 rounded-xl border border-gray-200 bg-gray-50/70 p-4">
           <div className="space-y-4">
             {repeatable.fields.map((subField) => (
               <FieldRenderer key={`${item.id}-${subField.id}`} field={subField} namePrefix={`${fieldName}.${index}`} />
@@ -62,7 +62,7 @@ export function RepeatableSection({ field, namePrefix }: RepeatableSectionProps)
             <button
               type="button"
               onClick={() => remove(index)}
-              className="absolute right-3 top-3 text-sm text-red-500 hover:text-red-700"
+              className="absolute right-3 top-3 rounded-md border border-danger/30 bg-white px-2 py-1 text-xs font-medium text-danger transition-colors hover:bg-red-50"
             >
               Remove
             </button>
@@ -73,7 +73,7 @@ export function RepeatableSection({ field, namePrefix }: RepeatableSectionProps)
         <button
           type="button"
           onClick={() => append(buildItemDefault(field))}
-          className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-800"
+          className="mt-3 rounded-md border border-brand px-3 py-1.5 text-sm font-medium text-brand transition-colors hover:bg-brand-muted"
         >
           {repeatable.addLabel}
         </button>

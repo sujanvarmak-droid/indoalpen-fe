@@ -79,17 +79,17 @@ export function FileUploadField({ fieldConfig }: FileUploadFieldProps) {
   };
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-      <div className="mb-2 flex items-center gap-2">
-        <h3 className="text-sm font-medium text-gray-700">{fieldConfig.label}</h3>
+    <section className="rounded-2xl border border-gray-200/90 bg-white p-5 shadow-sm sm:p-6">
+      <div className="mb-2.5 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-gray-800">{fieldConfig.label}</h3>
         {fieldConfig.required ? (
           <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Required</span>
         ) : null}
       </div>
-      {fieldConfig.hint ? <p className="mb-2 text-xs text-gray-500">{fieldConfig.hint}</p> : null}
+      {fieldConfig.hint ? <p className="mb-3 text-xs leading-5 text-gray-500">{fieldConfig.hint}</p> : null}
 
       {status === 'done' ? (
-        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3.5">
           <p className="text-sm text-green-700">✓ {uploadState?.fileName ?? 'Uploaded'}</p>
           <button type="button" onClick={resetUpload} className="text-sm text-green-700 underline hover:text-green-900">
             Remove
@@ -137,7 +137,7 @@ export function FileUploadField({ fieldConfig }: FileUploadFieldProps) {
             }}
             onClick={() => fileInputRef.current?.click()}
             className={cx(
-              'cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors',
+              'cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition-colors',
               isDragging ? 'border-brand-light bg-brand-muted/40' : 'border-gray-300 hover:border-brand-light'
             )}
           >

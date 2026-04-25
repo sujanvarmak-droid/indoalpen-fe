@@ -4,34 +4,40 @@ import { useAuth } from '@/hooks/useAuth';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { BilingualText } from '@/components/ui/BilingualText';
+import { textData } from '@/constants/textData';
+
+const { homeSubSections: hss } = textData;
 
 const categories = [
   {
     id: 'engineering',
     name: 'Engineering Sciences',
     subcategories: [
-      { id: 'graduate-research', name: 'Graduate Research' },
-      { id: 'engineering-innovation', name: 'Engineering Innovation and Research' },
+      { id: 'graduate-research', name: 'Graduate Research', text: hss.graduateResearch },
+      { id: 'engineering-innovation', name: 'Engineering Innovation and Research', text: hss.engineeringInnovation },
     ],
   },
   {
     id: 'medical',
     name: 'Medical Sciences',
     subcategories: [
-      { id: 'translational-biomedical', name: 'Translational Biomedical Engineering' },
-      { id: 'hearing-implant', name: 'Hearing Implant Research' },
-      { id: 'dental-implant', name: 'Dental Implant Research' },
+      { id: 'translational-biomedical', name: 'Translational Biomedical Engineering', text: hss.translationalBiomedical },
+      { id: 'hearing-implant', name: 'Hearing Implant Research', text: hss.hearingImplant },
+      { id: 'dental-implant', name: 'Dental Implant Research', text: hss.dentalImplant },
     ],
   },
   {
     id: 'management',
     name: 'Management Studies',
     subcategories: [],
+    text: hss.managementStudies,
   },
   {
     id: 'science-kids',
     name: 'Science for Kids',
     subcategories: [],
+    text: hss.scienceKids,
   },
 ];
 
@@ -167,6 +173,78 @@ function CategoryCarousel({ onSlideClick }) {
   );
 }
 
+// ── Category section with selectable subcategories ───────────────────────────
+function CategorySection({ cat, onBrowse }) {
+  const [selectedId, setSelectedId] = useState(cat.subcategories[0]?.id ?? null);
+  const selectedSub = cat.subcategories.find((s) => s.id === selectedId);
+
+  return (
+    <div
+      id={cat.id}
+      className="border border-gray-200 rounded-lg overflow-hidden scroll-mt-28"
+    >
+      <div className="flex items-center justify-between bg-brand px-4 py-4 sm:px-6">
+        <h3 className="text-base font-semibold text-white">{cat.name}</h3>
+        <Button
+          onClick={onBrowse}
+          variant="ghost"
+          size="sm"
+          className="px-0 text-xs text-white/80 hover:bg-transparent hover:text-white"
+        >
+          Browse all &rsaquo;
+        </Button>
+      </div>
+
+      {cat.subcategories.length > 0 ? (
+        <div className="flex min-h-[220px] flex-col md:flex-row">
+          <aside className="shrink-0 border-b border-gray-200 bg-brand-muted/40 md:w-64 md:border-b-0 md:border-r">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 pt-4 pb-2">
+              Subcategories
+            </p>
+            <ul>
+              {cat.subcategories.map((sub, i) => {
+                const isSelected = sub.id === selectedId;
+                return (
+                  <li key={sub.id}>
+                    <button
+                      onClick={() => setSelectedId(sub.id)}
+                      className={[
+                        'flex w-full items-center gap-2 px-5 py-3 text-sm text-left transition-colors',
+                        isSelected
+                          ? 'bg-white text-brand font-medium'
+                          : 'text-gray-700 hover:bg-white/60',
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold shrink-0',
+                          isSelected
+                            ? 'bg-brand text-white'
+                            : 'bg-brand-light/20 text-brand-light',
+                        ].join(' ')}
+                      >
+                        {i + 1}
+                      </span>
+                      {sub.name}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+          <div className="flex flex-1 p-6 sm:p-8">
+            {selectedSub && <BilingualText key={selectedSub.id} text={selectedSub.text} />}
+          </div>
+        </div>
+      ) : (
+        <div className="p-8">
+          <BilingualText text={cat.text} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -259,64 +337,11 @@ export default function Home() {
         </h2>
 
         {categories.map((cat) => (
-          <div
-            key={cat.id}
-            id={cat.id}
-            ref={(el) => (sectionRefs.current[cat.id] = el)}
-            className="border border-gray-200 rounded-lg overflow-hidden scroll-mt-28"
-          >
-            <div className="flex items-center justify-between bg-brand px-4 py-4 sm:px-6">
-              <h3 className="text-base font-semibold text-white">{cat.name}</h3>
-              <Button
-                onClick={() => navigate(`/browse?category=${cat.id}`)}
-                variant="ghost"
-                size="sm"
-                className="px-0 text-xs text-white/80 hover:bg-transparent hover:text-white"
-              >
-                Browse all &rsaquo;
-              </Button>
-            </div>
-
-            {cat.subcategories.length > 0 ? (
-              <div className="flex min-h-[220px] flex-col md:flex-row">
-                <aside className="shrink-0 border-b border-gray-200 bg-brand-muted/40 md:w-64 md:border-b-0 md:border-r">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 pt-4 pb-2">
-                    Subcategories
-                  </p>
-                  <ul>
-                    {cat.subcategories.map((sub, i) => (
-                      <li key={sub.id}>
-                        <div className="flex items-center gap-2 px-5 py-3 text-sm text-gray-700 hover:bg-white/60 transition-colors cursor-default">
-                          <span className="w-5 h-5 rounded-full bg-brand-light/20 text-brand-light flex items-center justify-center text-xs font-semibold shrink-0">
-                            {i + 1}
-                          </span>
-                          {sub.name}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </aside>
-                <div className="flex flex-1 flex-col items-center justify-center p-6 text-center sm:p-8">
-                  <div className="w-12 h-12 rounded-full bg-brand-muted flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm text-gray-400">Content coming soon.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center p-12">
-                <div className="w-12 h-12 rounded-full bg-brand-muted flex items-center justify-center mb-3">
-                  <svg className="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <p className="text-sm text-gray-400">Content coming soon.</p>
-              </div>
-            )}
+          <div key={cat.id} ref={(el) => (sectionRefs.current[cat.id] = el)}>
+            <CategorySection
+              cat={cat}
+              onBrowse={() => navigate(`/browse?category=${cat.id}`)}
+            />
           </div>
         ))}
 

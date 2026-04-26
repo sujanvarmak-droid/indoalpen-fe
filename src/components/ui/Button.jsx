@@ -2,7 +2,7 @@ import { cn } from '@/utils/cn';
 
 const variantClasses = {
   primary:
-    'bg-brand text-white hover:bg-brand-light focus:ring-brand disabled:bg-brand/50',
+    'bg-brand text-white hover:bg-brand/90 focus:ring-brand disabled:bg-brand/50',
   secondary:
     'bg-white text-brand border border-brand hover:bg-brand-muted focus:ring-brand disabled:opacity-50',
   danger:

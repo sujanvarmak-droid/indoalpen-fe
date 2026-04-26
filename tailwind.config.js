@@ -3,7 +3,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: { DEFAULT: '#1E3A5F', light: '#2E86AB', muted: '#EEF4F8' },
+        brand: { DEFAULT: '#ED2939', light: '#C8102E', muted: '#FFF1F3' },
         success: '#1A7A4A',
         warning: '#C05C00',
         danger: '#B22222',

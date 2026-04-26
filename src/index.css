@@ -24,3 +24,51 @@
   nav, aside, [data-print-hidden], button { display: none !important; }
   main, .max-w-2xl { max-width: 100% !important; margin: 0 !important; }
 }
+
+/* Keep legacy/bootstrap "primary" surfaces aligned to app theme color */
+.text-primary { color: #ED2939 !important; }
+.bg-primary { background-color: #ED2939 !important; }
+.border-primary { border-color: #ED2939 !important; }
+
+.btn-primary {
+  background-color: #ED2939 !important;
+  border-color: #ED2939 !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #C8102E !important;
+  border-color: #C8102E !important;
+}
+
+.nav-pills .nav-link.active,
+.nav-tabs .nav-link.active {
+  background-color: #ED2939 !important;
+  border-color: #ED2939 !important;
+  color: #fff !important;
+}
+
+/* Force Tailwind brand utility classes to Austria red palette immediately */
+.text-brand { color: #ED2939 !important; }
+.bg-brand { background-color: #ED2939 !important; }
+.border-brand { border-color: #ED2939 !important; }
+
+.text-brand-light { color: #C8102E !important; }
+.bg-brand-light { background-color: #C8102E !important; }
+.border-brand-light { border-color: #C8102E !important; }
+
+.bg-brand-muted { background-color: #FFF1F3 !important; }
+
+.hover\:text-brand:hover { color: #ED2939 !important; }
+.hover\:text-brand-light:hover { color: #C8102E !important; }
+.hover\:bg-brand:hover { background-color: #ED2939 !important; }
+.hover\:bg-brand-light:hover { background-color: #C8102E !important; }
+.hover\:border-brand:hover { border-color: #ED2939 !important; }
+.hover\:border-brand-light:hover { border-color: #C8102E !important; }
+
+.focus\:border-brand:focus { border-color: #ED2939 !important; }
+.focus\:border-brand-light:focus { border-color: #C8102E !important; }
+.focus\:ring-brand:focus { --tw-ring-color: #ED2939 !important; }
+.focus\:ring-brand-light:focus { --tw-ring-color: #C8102E !important; }
+

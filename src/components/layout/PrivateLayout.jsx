@@ -30,7 +30,7 @@ const getInitials = (name = '') => {
 const roleBadgeColor = {
   admin:  'bg-purple-100 text-purple-700',
   editor: 'bg-amber-100 text-amber-700',
-  author: 'bg-blue-100 text-blue-700',
+  author: 'bg-brand-muted text-brand',
   public: 'bg-gray-100 text-gray-600',
 };
 

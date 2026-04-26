@@ -64,7 +64,7 @@ export const AuthorProfile = () => {
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
       <div className="mb-8">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-blue-600">Step 1 of 9 - Author Profile</p>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-brand">Step 1 of 9 - Author Profile</p>
         <h1 className="text-2xl font-bold text-gray-900">Confirm Your Author Details</h1>
         <p className="mt-1 text-sm text-gray-500">
           These details will be used across your submission. Update them if needed before proceeding.

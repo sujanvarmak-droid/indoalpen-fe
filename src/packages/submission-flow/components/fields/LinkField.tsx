@@ -13,7 +13,7 @@ export function LinkField({ field }: LinkFieldProps) {
         href={field.linkHref ?? field.hint ?? '#'}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 text-sm text-blue-600 underline underline-offset-2 transition-colors hover:text-blue-800"
+        className="inline-flex items-center gap-1 text-sm text-brand underline underline-offset-2 transition-colors hover:text-brand/80"
       >
         View Author Guidelines
         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

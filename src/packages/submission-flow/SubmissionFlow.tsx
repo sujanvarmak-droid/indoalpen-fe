@@ -17,7 +17,7 @@ function RedirectMode({
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-20">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
       <p className="text-sm text-gray-600">Redirecting to external submission portal...</p>
       {onCancel ? (
         <button onClick={onCancel} className="mt-2 text-xs text-gray-400 underline hover:text-gray-600">

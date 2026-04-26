@@ -76,7 +76,7 @@ const EditSubmission = () => {
   if (submission.status !== SUBMISSION_STATUS.DRAFT) {
     return (
       <div className="max-w-3xl mx-auto">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col gap-3">
+        <div className="bg-brand-muted border border-brand/30 rounded-xl p-6 flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold text-gray-800 flex-1">
               {submission.title || 'Untitled'}

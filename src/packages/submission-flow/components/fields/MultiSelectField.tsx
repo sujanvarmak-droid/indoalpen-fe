@@ -48,7 +48,7 @@ export function MultiSelectField({ field, namePrefix }: FieldProps) {
                     type="checkbox"
                     checked={selected.includes(option.value)}
                     onChange={() => toggle(option.value)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
                   />
                   {option.label}
                 </label>

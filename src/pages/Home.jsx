@@ -56,117 +56,104 @@ const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 // ── Carousel ──────────────────────────────────────────────────────────────────
 function CategoryCarousel({ onSlideClick }) {
   const [current, setCurrent] = useState(0);
-  const [visible, setVisible] = useState(3);
   const total = carouselSlides.length;
-  const maxIndex = Math.max(0, total - visible);
+
+  const prev = () => setCurrent((c) => (c - 1 + total) % total);
+  const next = () => setCurrent((c) => (c + 1) % total);
 
   useEffect(() => {
-    const updateVisible = () => {
-      if (window.innerWidth < 640) {
-        setVisible(1);
-      } else if (window.innerWidth < 1024) {
-        setVisible(2);
-      } else {
-        setVisible(3);
-      }
-    };
-    updateVisible();
-    window.addEventListener('resize', updateVisible);
-    return () => window.removeEventListener('resize', updateVisible);
-  }, []);
-
-  useEffect(() => {
-    setCurrent((idx) => Math.min(idx, maxIndex));
-  }, [maxIndex]);
-
-  const prev = () => setCurrent((c) => Math.max(c - 1, 0));
-  const next = () => setCurrent((c) => Math.min(c + 1, maxIndex));
-
-  // auto-advance
-  useEffect(() => {
-    const t = setInterval(() => setCurrent((c) => (c >= maxIndex ? 0 : c + 1)), 4000);
+    const t = setInterval(() => setCurrent((c) => (c + 1) % total), 4000);
     return () => clearInterval(t);
-  }, [maxIndex]);
+  }, [total]);
+
+  const getCircularOffset = (index) => {
+    let diff = index - current;
+    if (diff > total / 2) diff -= total;
+    if (diff < -total / 2) diff += total;
+    return diff;
+  };
 
   return (
     <div className="relative">
-      {/* Prev */}
-      <button
-        onClick={prev}
-        disabled={current === 0}
-        aria-label="Previous"
-        className="absolute left-2 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-brand shadow transition-colors hover:bg-brand-muted disabled:cursor-not-allowed disabled:opacity-30 sm:flex"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+      <div className="relative h-[180px] overflow-hidden sm:h-[230px] md:h-[280px]">
+        {carouselSlides.map((slide, index) => {
+          const offset = getCircularOffset(index);
+          const isCenter = offset === 0;
+          const hidden = Math.abs(offset) > 2;
+          const translate = offset * 22;
+          const scale = isCenter ? 1 : Math.abs(offset) === 1 ? 0.88 : 0.78;
+          const opacity = isCenter ? 1 : Math.abs(offset) === 1 ? 0.65 : 0.4;
 
-      {/* Track */}
-      <div className="overflow-hidden">
-        <div
-          className="flex transition-transform duration-500 ease-in-out gap-5"
-          style={{ transform: `translateX(calc(-${current} * (100% / ${visible}) - ${current} * (20px / ${visible})))` }}
-        >
-          {carouselSlides.map((slide) => (
+          return (
             <button
               key={slide.id}
               onClick={() => onSlideClick(slide.categoryId)}
-              className="shrink-0 group rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-brand-light"
-              style={{ width: `calc((100% - ${(visible - 1) * 20}px) / ${visible})` }}
+              aria-label={slide.label}
+              className={[
+                'absolute left-1/2 top-0 h-full w-[78%] max-w-[860px] -translate-x-1/2 overflow-hidden rounded-[24px] border border-white/30 text-left',
+                'shadow-[0_16px_45px_rgba(0,0,0,0.22)] transition-all duration-500 ease-out',
+                'focus:outline-none focus:ring-2 focus:ring-brand-light',
+                hidden ? 'pointer-events-none' : '',
+              ].join(' ')}
+              style={{
+                transform: `translateX(calc(-50% + ${translate}%)) scale(${scale})`,
+                opacity,
+                zIndex: 50 - Math.abs(offset),
+              }}
             >
-              {/* Image area */}
-              <div className="relative bg-brand-muted h-44 flex items-center justify-center overflow-hidden">
+              <div className="relative h-full w-full bg-brand-muted">
                 {slide.img ? (
-                  <img src={slide.img} alt={slide.label} className="w-full h-full object-cover" />
+                  <img src={slide.img} alt={slide.label} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex flex-col items-center gap-2 opacity-40">
-                    <svg className="w-10 h-10 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-xs text-brand font-medium">Image coming soon</span>
+                  <div className="flex h-full w-full items-center justify-center">
+                    <span className="text-xs font-medium text-brand">Image coming soon</span>
                   </div>
                 )}
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-brand/0 group-hover:bg-brand/10 transition-colors duration-300" />
-              </div>
-
-              {/* Label */}
-              <div className="px-4 py-3 bg-white">
-                <p className="text-xs font-medium text-brand-light uppercase tracking-wide mb-0.5">{slide.sublabel}</p>
-                <p className="text-sm font-semibold text-brand leading-snug group-hover:text-brand-light transition-colors">{slide.label}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/15 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-6 sm:right-6">
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-white/80 sm:text-xs">{slide.sublabel}</p>
+                  <p className="line-clamp-2 text-sm font-semibold text-white sm:text-base">{slide.label}</p>
+                </div>
               </div>
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Next */}
-      <button
-        onClick={next}
-        disabled={current >= maxIndex}
-        aria-label="Next"
-        className="absolute right-2 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-brand shadow transition-colors hover:bg-brand-muted disabled:cursor-not-allowed disabled:opacity-30 sm:flex"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+      <div className="mt-5 flex items-center justify-center gap-4">
+        <button
+          onClick={prev}
+          aria-label="Previous"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
 
-      {/* Dots */}
-      <div className="flex justify-center gap-1.5 mt-4">
-        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            aria-label={`Go to slide ${i + 1}`}
-            className={[
-              'w-2 h-2 rounded-full transition-all duration-300',
-              i === current ? 'bg-brand w-5' : 'bg-gray-300 hover:bg-gray-400',
-            ].join(' ')}
-          />
-        ))}
+        <div className="flex items-center gap-1.5">
+          {carouselSlides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={[
+                'h-2 w-2 rounded-full transition-all duration-300',
+                i === current ? 'w-4 bg-brand' : 'bg-gray-300 hover:bg-gray-400',
+              ].join(' ')}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={next}
+          aria-label="Next"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -219,7 +206,7 @@ function CategorySection({ cat, onBrowse }) {
                           'w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold shrink-0',
                           isSelected
                             ? 'bg-brand text-white'
-                            : 'bg-brand-light/20 text-brand-light',
+                            : 'bg-brand/15 text-brand',
                         ].join(' ')}
                       >
                         {i + 1}
@@ -282,7 +269,7 @@ export default function Home() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h1 className="text-2xl font-semibold text-brand mb-1">
               Search for peer-reviewed journal articles and book chapters
-              <span className="text-brand-light font-normal"> (including open access content)</span>
+              <span className="text-brand font-normal"> (including open access content)</span>
             </h1>
             <Link to={ACCOUNT_ROUTES.NEW_SUBMISSION} className="shrink-0">
               <Button variant="primary" size="md" fullWidth className="sm:w-auto">
@@ -319,7 +306,7 @@ export default function Home() {
                   'px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors shrink-0',
                   activeTab === cat.id
                     ? 'border-brand text-brand'
-                    : 'border-transparent text-gray-500 hover:text-brand hover:border-gray-300',
+                    : 'border-transparent text-brand/70 hover:text-brand hover:border-brand/30',
                 ].join(' ')}
               >
                 {cat.name}
@@ -352,14 +339,14 @@ export default function Home() {
               <Link
                 key={letter}
                 to={`/browse?letter=${letter}`}
-                className="inline-flex h-8 w-8 items-center justify-center rounded border border-brand-light text-sm font-medium text-brand-light transition-colors hover:bg-brand-muted"
+                className="inline-flex h-8 w-8 items-center justify-center rounded border border-brand text-sm font-medium text-brand transition-colors hover:bg-brand-muted"
               >
                 {letter}
               </Link>
             ))}
             <Link
               to="/browse?letter=0-9"
-              className="px-2 h-8 flex items-center justify-center text-sm font-medium text-brand-light border border-brand-light rounded hover:bg-brand-muted transition-colors"
+              className="px-2 h-8 flex items-center justify-center text-sm font-medium text-brand border border-brand rounded hover:bg-brand-muted transition-colors"
             >
               0-9
             </Link>
@@ -375,8 +362,8 @@ export default function Home() {
             Articles published open access are peer-reviewed and made freely available for everyone to read, download and reuse.
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <Link to="/browse?type=journals&access=open-access" className="text-brand-light hover:underline">View the list of full open-access journals and books &rsaquo;</Link>
-            <Link to="/browse?access=open-access" className="text-brand-light hover:underline">View all publications with open access articles &rsaquo;</Link>
+            <Link to="/browse?type=journals&access=open-access" className="text-brand hover:underline">View the list of full open-access journals and books &rsaquo;</Link>
+            <Link to="/browse?access=open-access" className="text-brand hover:underline">View all publications with open access articles &rsaquo;</Link>
           </div>
         </div>
 
@@ -384,7 +371,7 @@ export default function Home() {
         {!isAuthenticated && (
           <div className="rounded-lg bg-brand p-6 text-center sm:p-8">
             <h3 className="text-xl font-semibold text-white mb-2">Ready to publish your research?</h3>
-            <p className="text-brand-muted text-sm mb-4">Join thousands of researchers sharing their work on IndoAlpen Verlag.</p>
+            <p className="mb-4 text-sm text-white/90">Join thousands of researchers sharing their work on IndoAlpen Verlag.</p>
             <div className="flex flex-col justify-center gap-3 sm:flex-row">
               <Link to="/signup"><Button variant="secondary" size="lg" fullWidth>Get Started</Button></Link>
               <Link to="/login">

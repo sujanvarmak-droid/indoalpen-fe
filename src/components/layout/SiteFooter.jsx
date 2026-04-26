@@ -10,7 +10,7 @@ const footerLinks = [
 ];
 
 export const SiteFooter = () => (
-  <footer className="bg-[#f6f3ee] border-t border-[#ddd4c7] mt-auto">
+  <footer className="mt-auto border-t border-gray-300/50 bg-gray-200/35">
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-700">
         {footerLinks.map((link) => (

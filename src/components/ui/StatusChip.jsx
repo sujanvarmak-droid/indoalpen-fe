@@ -8,7 +8,7 @@ const statusConfig = {
   },
   [SUBMISSION_STATUS.SUBMITTED]: {
     label: 'Submitted',
-    className: 'bg-blue-100 text-blue-700',
+    className: 'bg-brand-muted text-brand',
   },
   [SUBMISSION_STATUS.UNDER_REVIEW]: {
     label: 'Under Review',

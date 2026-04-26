@@ -78,7 +78,7 @@ export const PublicLayout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      <header className="relative z-[90] bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -145,7 +145,7 @@ export const PublicLayout = () => {
                       ) : null}
                     </Button>
                     {accountMenuOpen ? (
-                      <div className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white py-2 shadow-lg z-50">
+                      <div className="absolute right-0 z-[100] mt-2 w-56 rounded-md border border-gray-200 bg-white py-2 shadow-lg">
                         <div className="px-4 pb-2">
                           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Notifications</p>
                           {notifications.length === 0 ? (

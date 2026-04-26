@@ -239,7 +239,7 @@ export default function Browse() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-4 px-0 text-xs text-brand-light hover:bg-transparent"
+                  className="mt-4 px-0 text-xs text-brand hover:bg-transparent"
                   onClick={() => navigate('/browse')}
                 >
                   Clear all filters
@@ -262,7 +262,7 @@ export default function Browse() {
                     'h-8 w-8 border px-0',
                     activeLetter === letter
                       ? 'border-brand'
-                      : 'border-brand-light text-brand-light hover:bg-brand-muted',
+                      : 'border-brand text-brand hover:bg-brand-muted',
                   ].join(' ')}
                 >
                   {letter}
@@ -276,7 +276,7 @@ export default function Browse() {
                   'h-8 border px-2',
                   activeLetter === '0-9'
                     ? 'border-brand'
-                    : 'border-brand-light text-brand-light hover:bg-brand-muted',
+                    : 'border-brand text-brand hover:bg-brand-muted',
                 ].join(' ')}
               >
                 0-9
@@ -294,11 +294,11 @@ export default function Browse() {
                 {filteredPublications.map((pub) => (
                   <li
                     key={pub.id}
-                    className="border border-gray-200 rounded-lg px-5 py-4 hover:border-brand-light hover:shadow-sm transition-all"
+                    className="border border-gray-200 rounded-lg px-5 py-4 hover:border-brand hover:shadow-sm transition-all"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-brand hover:text-brand-light cursor-pointer transition-colors leading-snug">
+                        <p className="text-sm font-semibold text-brand hover:text-brand/80 cursor-pointer transition-colors leading-snug">
                           {pub.title}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">{pub.publisher}</p>
@@ -327,7 +327,7 @@ export default function Browse() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-3 text-xs text-brand-light hover:bg-transparent"
+                  className="mt-3 text-xs text-brand hover:bg-transparent"
                   onClick={() => navigate('/browse')}
                 >
                   Clear filters

@@ -6,7 +6,7 @@ import { cn } from '@/utils/cn';
 const typeStyles = {
   success: 'border-l-4 border-success bg-green-50 text-green-800',
   error:   'border-l-4 border-danger bg-red-50 text-red-800',
-  info:    'border-l-4 border-brand-light bg-blue-50 text-blue-800',
+  info:    'border-l-4 border-brand bg-brand-muted text-brand',
 };
 
 const ToastItem = ({ toast }) => {

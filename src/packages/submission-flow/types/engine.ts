@@ -1,4 +1,4 @@
-import { FlowData, StepData, UploadFileFn, SubmitFlowFn } from './config';
+import { FlowData, StepData, UploadFileFn, SubmitFlowFn, SaveStepFn, LoadReviewFn } from './config';
 
 export type StepStatus = 'idle' | 'valid' | 'invalid' | 'complete';
 
@@ -32,4 +32,6 @@ export type FlowAction =
 export interface FlowRuntime {
   uploadFile: UploadFileFn;
   submitFn: SubmitFlowFn;
+  saveStep?: SaveStepFn;
+  loadReview?: LoadReviewFn;
 }

@@ -11,6 +11,33 @@ import {
 const extractError = (error) =>
   error.response?.data ?? { code: 'UNKNOWN', message: error.message };
 
+const normalizeRole = (rawRole) => String(rawRole).replace(/^ROLE_/, '').toUpperCase();
+
+const resolveRoles = (data) => {
+  if (Array.isArray(data?.roles) && data.roles.length > 0) {
+    return data.roles.map(normalizeRole).filter(Boolean);
+  }
+  if (Array.isArray(data?.authorities) && data.authorities.length > 0) {
+    return data.authorities.map(normalizeRole).filter(Boolean);
+  }
+  if (data?.role) {
+    return [normalizeRole(data.role)];
+  }
+  return [];
+};
+
+const normalizeAuthUser = (data) => {
+  const roles = resolveRoles(data);
+  return {
+    id: data?.id ?? data?.userId ?? null,
+    email: data?.email ?? '',
+    fullName: data?.fullName ?? data?.name ?? '',
+    role: roles[0] ?? null,
+    roles,
+    permissions: Array.isArray(data?.permissions) ? data.permissions : [],
+  };
+};
+
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials, { rejectWithValue }) => {
@@ -18,7 +45,7 @@ export const loginUser = createAsyncThunk(
       const data = await authService.login(credentials);
       setAccessToken(data.accessToken ?? data.token);
       setRefreshToken(data.refreshToken);
-      return { id: data.userId, email: data.email, role: data.role };
+      return normalizeAuthUser(data);
     } catch (error) {
       return rejectWithValue(extractError(error));
     }
@@ -42,7 +69,8 @@ export const restoreSession = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       if (!getAccessToken() && !getRefreshToken()) return rejectWithValue({ code: 'NO_TOKEN' });
-      return await authService.getMe(); // { id, email, fullName, role, isActive, createdAt }
+      const data = await authService.getMe();
+      return normalizeAuthUser(data);
     } catch (error) {
       clearAuthTokens();
       return rejectWithValue(extractError(error));
@@ -64,7 +92,7 @@ export const verifyEmail = createAsyncThunk(
       const data = await authService.verifyEmail(token);
       setAccessToken(data.accessToken ?? data.token);
       setRefreshToken(data.refreshToken);
-      return { id: data.userId, email: data.email, role: data.role };
+      return normalizeAuthUser(data);
     } catch (error) {
       return rejectWithValue(extractError(error));
     }

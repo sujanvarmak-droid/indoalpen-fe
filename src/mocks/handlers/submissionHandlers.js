@@ -30,6 +30,20 @@ const mockSubmissions = [
 ];
 
 export const submissionHandlers = [
+  http.post(`${BASE}/submissions/start`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(
+      {
+        submissionId: 'sub-new',
+        journalCode: body?.journalCode ?? 'JRNL-001',
+        status: 'DRAFT',
+        version: 1,
+        createdAt: new Date().toISOString(),
+      },
+      { status: 201 }
+    );
+  }),
+
   http.get(`${BASE}/submissions/presigned-url`, () => {
     return HttpResponse.json({
       presignedUrl:
@@ -45,6 +59,11 @@ export const submissionHandlers = [
       page: 0,
       size: 10,
     });
+  }),
+
+  http.get(`${BASE}/submissions/:id`, ({ params }) => {
+    const found = mockSubmissions.find((submission) => submission.id === params.id);
+    return HttpResponse.json(found ?? { id: params.id, status: 'DRAFT' });
   }),
 
   http.post(`${BASE}/submissions`, () => {
@@ -72,14 +91,23 @@ export const submissionHandlers = [
     );
   }),
 
-  http.patch(`${BASE}/submissions/:id/submit`, ({ params }) => {
+  http.post(`${BASE}/submissions/:id/submit`, ({ params }) => {
     const found = mockSubmissions.find((s) => s.id === params.id);
     const base = found ?? { id: params.id };
     return HttpResponse.json({ ...base, status: 'SUBMITTED' });
   }),
 
+  http.patch(`${BASE}/submissions/:id/steps/:stepType`, async ({ params, request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      id: params.id,
+      stepType: params.stepType,
+      ...body,
+    });
+  }),
+
   http.patch(`${BASE}/submissions/:id/files`, () => {
-    return HttpResponse.json({ message: 'File attached.' });
+    return HttpResponse.json({ fileId: `file-${Math.random().toString(36).slice(2, 10)}` });
   }),
 
   http.patch(`${BASE}/submissions/:id`, async ({ params, request }) => {

@@ -1,4 +1,3 @@
-import { ComponentType } from 'react';
 import { ZodTypeAny } from 'zod';
 
 export type FieldType =
@@ -89,7 +88,7 @@ export interface StepConfig {
   description?: string;
   fields?: FieldConfig[];
   uploadFields?: UploadFieldConfig[];
-  component?: ComponentType<CustomStepProps>;
+  component?: (props: CustomStepProps) => unknown;
   skipIf?: Condition;
 }
 
@@ -98,6 +97,8 @@ export interface PayloadMap {
 }
 
 export type SubmitFlowFn = (payload: Record<string, unknown>) => Promise<unknown>;
+export type SaveStepFn = (stepId: string, stepData: StepData) => Promise<unknown>;
+export type LoadReviewFn = () => Promise<unknown>;
 
 export interface SubmitConfig {
   payloadMap?: PayloadMap;
@@ -126,6 +127,8 @@ export interface SubmissionFlowProps {
   mode: FlowMode;
   config?: FlowConfig;
   submitFn?: SubmitFlowFn;
+  saveStep?: SaveStepFn;
+  loadReview?: LoadReviewFn;
   uploadFile?: UploadFileFn;
   redirectUrl?: string;
   iframeUrl?: string;

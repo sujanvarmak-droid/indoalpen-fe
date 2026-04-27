@@ -10,13 +10,28 @@ export const createDraft = async (data) => {
   return response.data;
 };
 
+export const startSubmission = async ({ journalCode }) => {
+  const response = await api.post('/submissions/start', { journalCode });
+  return response.data;
+};
+
 export const updateDraft = async ({ id, data }) => {
   const response = await api.patch(`/submissions/${id}`, data);
   return response.data;
 };
 
+export const updateSubmissionStep = async ({ submissionId, stepType, data }) => {
+  const response = await api.patch(`/submissions/${submissionId}/steps/${stepType}`, data);
+  return response.data;
+};
+
+export const getSubmissionById = async (id) => {
+  const response = await api.get(`/submissions/${id}`);
+  return response.data;
+};
+
 export const submitForReview = async (id) => {
-  const response = await api.patch(`/submissions/${id}/submit`);
+  const response = await api.post(`/submissions/${id}/submit`);
   return response.data;
 };
 

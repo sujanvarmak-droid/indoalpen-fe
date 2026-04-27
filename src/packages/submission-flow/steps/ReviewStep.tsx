@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { StepComponentProps } from '../types/config';
 import { useFlowContext } from '../context/FlowContext';
 import { useFlowNavigation } from '../hooks/useFlowNavigation';
@@ -8,6 +9,12 @@ import { StepNavigation } from '../components/StepNavigation';
 export function ReviewStep({ step, config, resolvedSteps }: StepComponentProps) {
   const { state, dispatch, runtime } = useFlowContext();
   const nav = useFlowNavigation(resolvedSteps, config);
+
+  useEffect(() => {
+    if (!runtime.loadReview) return;
+    void runtime.loadReview();
+  }, [runtime]);
+
   const handleExportPDF = () => {
     window.print();
   };

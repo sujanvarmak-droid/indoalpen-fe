@@ -5,7 +5,7 @@ import { useFlowContext } from '../context/FlowContext';
 import { evaluateCondition } from '../utils/evaluateCondition';
 
 export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConfig) {
-  const { state, dispatch } = useFlowContext();
+  const { state, dispatch, runtime } = useFlowContext();
   const formRef = useRef<UseFormReturn | null>(null);
 
   const registerForm = useCallback((methods: UseFormReturn) => {
@@ -29,6 +29,9 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
       }
       const values = formRef.current.getValues();
       dispatch({ type: 'SAVE_STEP_DATA', stepId: currentStep.id, data: values });
+      if (runtime.saveStep) {
+        await runtime.saveStep(currentStep.id, values);
+      }
       dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'complete' });
     }
 
@@ -57,6 +60,9 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
       });
 
       dispatch({ type: 'SAVE_STEP_DATA', stepId: currentStep.id, data: uploadData });
+      if (runtime.saveStep) {
+        await runtime.saveStep(currentStep.id, uploadData);
+      }
       dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'complete' });
     }
 
@@ -75,7 +81,7 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
     if (nextIndex < resolvedSteps.length) {
       dispatch({ type: 'GO_NEXT', nextIndex });
     }
-  }, [dispatch, resolvedSteps, state]);
+  }, [dispatch, resolvedSteps, runtime, state]);
 
   const back = useCallback(() => {
     if (state.stepHistory.length > 0) {

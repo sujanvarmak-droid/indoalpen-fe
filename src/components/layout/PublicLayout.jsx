@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
-import { getMe as getMyAccount } from '@/services/userService';
 import { Button } from '@/components/ui/Button';
 import { Toast } from '@/components/ui/Toast';
 import { SiteFooter } from '@/components/layout/SiteFooter';
@@ -33,38 +32,13 @@ export const PublicLayout = () => {
   const displayName = user?.name ?? user?.fullName ?? profileName ?? user?.email ?? 'User';
 
   useEffect(() => {
-    let isMounted = true;
-    const loadMe = async () => {
-      try {
-        const profile = await getMyAccount();
-        const feed = Array.isArray(profile?.notifications) ? profile.notifications : [];
-        const firstLast = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim();
-        const resolvedName =
-          profile?.name ??
-          profile?.fullName ??
-          (firstLast || undefined) ??
-          profile?.username ??
-          '';
-        if (isMounted) {
-          setNotifications(feed);
-          setProfileName(resolvedName);
-        }
-      } catch {
-        if (isMounted) {
-          setNotifications([]);
-          setProfileName('');
-        }
-      }
-    };
-
-    if (isAuthenticated) {
-      loadMe();
+    if (!isAuthenticated) {
+      setNotifications([]);
+      setProfileName('');
+      return;
     }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated]);
+    setProfileName(user?.name ?? user?.fullName ?? '');
+  }, [isAuthenticated, user?.fullName, user?.name]);
 
   useEffect(() => {
     const onClickOutside = (event) => {

@@ -7,7 +7,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 import { addToast } from '@/features/ui/uiSlice';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
-import { updateMe } from '@/services/userService';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -47,18 +46,9 @@ export const AuthorProfile = () => {
   }, [user, reset]);
 
   const onSubmit = async (data) => {
-    try {
-      await updateMe(data);
-      dispatch(addToast({ message: 'Profile updated. Starting submission...', type: 'success' }));
-      navigate(ACCOUNT_ROUTES.NEW_SUBMISSION);
-    } catch (err) {
-      dispatch(
-        addToast({
-          message: err?.response?.data?.message ?? 'Failed to update profile. Please try again.',
-          type: 'error',
-        })
-      );
-    }
+    reset(data);
+    dispatch(addToast({ message: 'Profile details confirmed. Starting submission...', type: 'success' }));
+    navigate(ACCOUNT_ROUTES.NEW_SUBMISSION);
   };
 
   return (

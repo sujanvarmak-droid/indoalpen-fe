@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux';
 import { useAuth } from '@/hooks/useAuth';
 import { forgotPassword } from '@/features/auth/authThunks';
 import { addToast } from '@/features/ui/uiSlice';
-import { updateMe } from '@/services/userService';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
@@ -51,12 +50,8 @@ const Profile = () => {
   }, [user, reset]);
 
   const onSubmit = async (data) => {
-    try {
-      await updateMe(data);
-      dispatch(addToast({ message: 'Profile updated successfully', type: 'success' }));
-    } catch {
-      dispatch(addToast({ message: 'Failed to update profile', type: 'error' }));
-    }
+    reset(data);
+    dispatch(addToast({ message: 'Profile changes saved locally', type: 'success' }));
   };
 
   const handleSendResetLink = async () => {

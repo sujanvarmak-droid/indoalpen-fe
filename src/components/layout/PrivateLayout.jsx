@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PERMISSIONS } from '@/constants/permissions';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
-import { getMe as getMyAccount } from '@/services/userService';
 import { Toast } from '@/components/ui/Toast';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { Button } from '@/components/ui/Button';
@@ -64,30 +63,13 @@ export const PrivateLayout = () => {
   }, [location.pathname, dispatch]);
 
   useEffect(() => {
-    let isMounted = true;
-    const loadMe = async () => {
-      try {
-        const profile = await getMyAccount();
-        const feed = Array.isArray(profile?.notifications) ? profile.notifications : [];
-        if (isMounted) {
-          setNotifications(feed);
-          setNotificationError(null);
-        }
-      } catch {
-        if (isMounted) {
-          setNotifications([]);
-          setNotificationError('Failed to load notifications');
-        }
-      }
-    };
-
     if (user) {
-      loadMe();
+      setNotifications([]);
+      setNotificationError(null);
+      return;
     }
-
-    return () => {
-      isMounted = false;
-    };
+    setNotifications([]);
+    setNotificationError(null);
   }, [user]);
 
   useEffect(() => {
@@ -213,7 +195,7 @@ export const PrivateLayout = () => {
                   {notificationError ? (
                     <p className="text-sm text-red-500">{notificationError}</p>
                   ) : notifications.length === 0 ? (
-                    <p className="text-sm text-gray-500">No notifications found in `/users/me`.</p>
+                    <p className="text-sm text-gray-500">No notifications found.</p>
                   ) : (
                     <div className="max-h-72 overflow-auto space-y-2">
                       {notifications.map((item, idx) => (

@@ -7,7 +7,6 @@ const defaultUpload: UploadFieldState = {
   progress: 0,
   objectUrl: null,
   fileName: null,
-  fileId: null,
   error: null,
 };
 

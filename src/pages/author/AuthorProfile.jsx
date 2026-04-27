@@ -4,10 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectAuthStatus, selectCurrentUser } from '@/features/auth/authSlice';
+import { selectCurrentUser } from '@/features/auth/authSlice';
 import { addToast } from '@/features/ui/uiSlice';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
-import { canAccessSubmissionFlow, SUBMISSION_FLOW_TEST_EMAIL } from '@/constants/submissionFlowAccess';
 import { updateMe } from '@/services/userService';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -22,7 +21,6 @@ export const AuthorProfile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
-  const authStatus = useSelector(selectAuthStatus);
 
   const {
     register,
@@ -47,19 +45,6 @@ export const AuthorProfile = () => {
       });
     }
   }, [user, reset]);
-
-  useEffect(() => {
-    if (authStatus === 'loading') return;
-    if (!canAccessSubmissionFlow(user?.email)) {
-      dispatch(
-        addToast({
-          message: `Submission flow is currently enabled only for ${SUBMISSION_FLOW_TEST_EMAIL}.`,
-          type: 'error',
-        })
-      );
-      navigate(ACCOUNT_ROUTES.DASHBOARD, { replace: true });
-    }
-  }, [authStatus, dispatch, navigate, user?.email]);
 
   const onSubmit = async (data) => {
     try {

@@ -214,7 +214,7 @@ export const publishJourneyConfig: FlowConfig = {
         {
           id: 'manuscript',
           label: 'Manuscript File',
-          mimeTypes: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+          mimeTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
           maxMb: 20,
           maxFiles: 1,
           required: true,
@@ -280,6 +280,14 @@ export const publishJourneyConfig: FlowConfig = {
                 required: false,
                 validation: z.string().optional(),
               },
+              {
+                id: 'reviewerReason',
+                type: 'textarea',
+                label: 'Reason for Suggestion',
+                placeholder: 'Why is this reviewer a good fit for this manuscript?',
+                required: false,
+                validation: z.string().max(500, 'Reason must not exceed 500 characters').optional(),
+              },
             ],
           },
           validation: z
@@ -288,6 +296,7 @@ export const publishJourneyConfig: FlowConfig = {
                 reviewerName: z.string().optional(),
                 reviewerEmail: z.string().email().optional().or(z.literal('')),
                 reviewerAffiliation: z.string().optional(),
+                reviewerReason: z.string().optional(),
               })
             )
             .optional(),
@@ -309,6 +318,15 @@ export const publishJourneyConfig: FlowConfig = {
           required: true,
           hint: 'Address the Editor-in-Chief. Explain the significance of your research and why it is suitable for this journal.',
           validation: z.string().min(100, 'Cover letter must be at least 100 characters').max(5000, 'Cover letter must not exceed 5000 characters'),
+        },
+        {
+          id: 'conflictsOfInterest',
+          type: 'textarea',
+          label: 'Conflicts of Interest',
+          placeholder: 'e.g. None',
+          required: true,
+          hint: 'Declare conflicts of interest. Enter "None" if there are no conflicts.',
+          validation: z.string().min(1, 'Conflicts of interest statement is required').max(1000, 'Max 1000 characters'),
         },
         {
           id: 'declaration',

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { canAccessSubmissionFlow } from '@/constants/submissionFlowAccess';
 import { Button } from '@/components/ui/Button';
 
 const PUBLICATION_TYPES = [
@@ -94,6 +96,8 @@ function CheckboxItem({ id, label, count, checked, onChange }) {
 export default function Browse() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canStartSubmission = canAccessSubmissionFlow(user?.email);
 
   const hasLetterParam = searchParams.has('letter');
   const activeLetter = searchParams.get('letter') || 'A';
@@ -156,9 +160,11 @@ export default function Browse() {
             <h1 className="text-xl font-semibold text-brand">
               Showing {totalCount.toLocaleString()} publications
             </h1>
-            <Button type="button" onClick={() => navigate(ACCOUNT_ROUTES.NEW_SUBMISSION)}>
-              Start Publish Journey
-            </Button>
+            {canStartSubmission ? (
+              <Button type="button" onClick={() => navigate(ACCOUNT_ROUTES.NEW_SUBMISSION)}>
+                Start Publish Journey
+              </Button>
+            ) : null}
           </div>
           {activeCategory && (
             <div className="mt-2 flex items-center gap-2">

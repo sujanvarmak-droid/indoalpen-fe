@@ -30,11 +30,59 @@ const mockSubmissions = [
 ];
 
 export const submissionHandlers = [
+  http.post(`${BASE}/submissions/start`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json(
+      {
+        submissionId: `sub-${Date.now()}`,
+        journalCode: body?.journalCode ?? null,
+        status: 'DRAFT',
+      },
+      { status: 201 }
+    );
+  }),
+
   http.get(`${BASE}/submissions/presigned-url`, () => {
     return HttpResponse.json({
       presignedUrl:
         'https://medpublish-dev.s3.amazonaws.com/uploads/mock-paper.pdf?X-Amz-Signature=mocksig',
       objectUrl: 'https://medpublish-dev.s3.amazonaws.com/uploads/mock-paper.pdf',
+    });
+  }),
+
+  http.get(`${BASE}/files/presigned-url`, ({ request }) => {
+    const url = new URL(request.url);
+    const fileName = url.searchParams.get('fileName') ?? 'mock-file.bin';
+    return HttpResponse.json({
+      presignedUrl: `https://medpublish-dev.s3.amazonaws.com/uploads/${fileName}?X-Amz-Signature=mocksig`,
+      s3Key: `uploads/${fileName}`,
+    });
+  }),
+
+  http.post(`${BASE}/files/attach`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      id: `file-${Date.now()}`,
+      publicationId: body?.publicationId ?? null,
+      s3Key: body?.s3Key ?? null,
+      fileName: body?.fileName ?? null,
+      contentType: body?.contentType ?? null,
+      fileType: body?.fileType ?? null,
+      fileUrl: body?.s3Key ? `https://medpublish-dev.s3.amazonaws.com/${body.s3Key}` : null,
+    });
+  }),
+
+  http.get(`${BASE}/files/publication/:pubId`, ({ params }) => {
+    return HttpResponse.json({
+      publicationId: params.pubId,
+      files: [],
+    });
+  }),
+
+  http.delete(`${BASE}/files/:fileId`, ({ params }) => {
+    return HttpResponse.json({
+      fileId: params.fileId,
+      deleted: true,
     });
   }),
 
@@ -45,6 +93,17 @@ export const submissionHandlers = [
       page: 0,
       size: 10,
     });
+  }),
+
+  http.get(`${BASE}/submissions/:id`, ({ params }) => {
+    const found = mockSubmissions.find((s) => s.id === params.id);
+    return HttpResponse.json(
+      found ?? {
+        id: params.id,
+        status: 'DRAFT',
+        title: 'Draft Submission',
+      }
+    );
   }),
 
   http.post(`${BASE}/submissions`, () => {
@@ -72,7 +131,17 @@ export const submissionHandlers = [
     );
   }),
 
-  http.patch(`${BASE}/submissions/:id/submit`, ({ params }) => {
+  http.patch(`${BASE}/submissions/:id/steps/:step`, async ({ params, request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      id: params.id,
+      step: params.step,
+      status: 'saved',
+      ...body,
+    });
+  }),
+
+  http.post(`${BASE}/submissions/:id/submit`, ({ params }) => {
     const found = mockSubmissions.find((s) => s.id === params.id);
     const base = found ?? { id: params.id };
     return HttpResponse.json({ ...base, status: 'SUBMITTED' });

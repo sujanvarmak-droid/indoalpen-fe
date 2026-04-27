@@ -1,4 +1,4 @@
-import { FlowData, StepData, UploadFileFn, SubmitFlowFn } from './config';
+import { FlowData, StepData, UploadFileFn, SubmitFlowFn, StepCompleteFn, FetchReviewDataFn } from './config';
 
 export type StepStatus = 'idle' | 'valid' | 'invalid' | 'complete';
 
@@ -7,6 +7,7 @@ export interface UploadFieldState {
   progress: number;
   objectUrl: string | null;
   fileName: string | null;
+  fileId: string | null;
   error: string | null;
 }
 
@@ -32,4 +33,6 @@ export type FlowAction =
 export interface FlowRuntime {
   uploadFile: UploadFileFn;
   submitFn: SubmitFlowFn;
+  fetchReviewData?: FetchReviewDataFn;
+  onStepComplete?: StepCompleteFn;
 }

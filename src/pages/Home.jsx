@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { canAccessSubmissionFlow } from '@/constants/submissionFlowAccess';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { BilingualText } from '@/components/ui/BilingualText';
@@ -233,8 +234,9 @@ function CategorySection({ cat, onBrowse }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const canStartSubmission = canAccessSubmissionFlow(user?.email);
   const [activeTab, setActiveTab] = useState(categories[0].id);
   const sectionRefs = useRef({});
 
@@ -271,11 +273,13 @@ export default function Home() {
               Search for peer-reviewed journal articles and book chapters
               <span className="text-brand font-normal"> (including open access content)</span>
             </h1>
-            <Link to={ACCOUNT_ROUTES.NEW_SUBMISSION} className="shrink-0">
-              <Button variant="primary" size="md" fullWidth className="sm:w-auto">
-                Publish Journey
-              </Button>
-            </Link>
+            {canStartSubmission ? (
+              <Link to={ACCOUNT_ROUTES.NEW_SUBMISSION} className="shrink-0">
+                <Button variant="primary" size="md" fullWidth className="sm:w-auto">
+                  Publish Journey
+                </Button>
+              </Link>
+            ) : null}
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_220px_auto]">
             <Input type="text" placeholder="Find articles with these terms" />

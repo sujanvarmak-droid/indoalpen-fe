@@ -65,6 +65,7 @@ export interface UploadFieldConfig {
 export interface UploadResult {
   objectUrl: string;
   fileName: string;
+  fileId?: string;
 }
 
 export type UploadFileFn = (
@@ -98,6 +99,12 @@ export interface PayloadMap {
 }
 
 export type SubmitFlowFn = (payload: Record<string, unknown>) => Promise<unknown>;
+export type FetchReviewDataFn = () => Promise<unknown>;
+export type StepCompleteFn = (params: {
+  stepId: string;
+  data: Record<string, unknown>;
+  flowData: FlowData;
+}) => Promise<void> | void;
 
 export interface SubmitConfig {
   payloadMap?: PayloadMap;
@@ -126,6 +133,8 @@ export interface SubmissionFlowProps {
   mode: FlowMode;
   config?: FlowConfig;
   submitFn?: SubmitFlowFn;
+  fetchReviewData?: FetchReviewDataFn;
+  onStepComplete?: StepCompleteFn;
   uploadFile?: UploadFileFn;
   redirectUrl?: string;
   iframeUrl?: string;

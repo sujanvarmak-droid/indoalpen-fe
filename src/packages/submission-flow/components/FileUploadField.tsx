@@ -19,7 +19,7 @@ export function FileUploadField({ fieldConfig }: FileUploadFieldProps) {
     dispatch({
       type: 'SET_UPLOAD',
       fieldId: fieldConfig.id,
-      patch: { status: 'idle', progress: 0, objectUrl: null, fileName: null, error: null },
+      patch: { status: 'idle', progress: 0, objectUrl: null, fileName: null, fileId: null, error: null },
     });
   };
 
@@ -44,6 +44,7 @@ export function FileUploadField({ fieldConfig }: FileUploadFieldProps) {
           error: null,
           fileName: file.name,
           objectUrl: null,
+          fileId: null,
         },
       });
 
@@ -63,6 +64,7 @@ export function FileUploadField({ fieldConfig }: FileUploadFieldProps) {
           progress: 100,
           objectUrl: result.objectUrl,
           fileName: result.fileName,
+          fileId: result.fileId ?? null,
           error: null,
         },
       });

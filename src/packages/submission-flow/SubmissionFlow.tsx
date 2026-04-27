@@ -69,6 +69,8 @@ function IframeMode({
 function InlineMode({
   config,
   submitFn,
+  fetchReviewData,
+  onStepComplete,
   uploadFile,
   onSuccess,
   onCancel,
@@ -92,7 +94,7 @@ function InlineMode({
   }
 
   const configWithCallbacks = { ...config, onSuccess, labels: labels ?? config.labels };
-  const runtime = { uploadFile, submitFn };
+  const runtime = { uploadFile, submitFn, fetchReviewData, onStepComplete };
 
   return (
     <FlowProvider config={configWithCallbacks} runtime={runtime}>

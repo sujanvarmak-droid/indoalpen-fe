@@ -5,7 +5,7 @@ import { useFlowContext } from '../context/FlowContext';
 import { evaluateCondition } from '../utils/evaluateCondition';
 
 export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConfig) {
-  const { state, dispatch } = useFlowContext();
+  const { state, dispatch, runtime } = useFlowContext();
   const formRef = useRef<UseFormReturn | null>(null);
 
   const registerForm = useCallback((methods: UseFormReturn) => {
@@ -30,6 +30,20 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
       const values = formRef.current.getValues();
       dispatch({ type: 'SAVE_STEP_DATA', stepId: currentStep.id, data: values });
       dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'complete' });
+
+      try {
+        await runtime.onStepComplete?.({
+          stepId: currentStep.id,
+          data: values as Record<string, unknown>,
+          flowData: {
+            ...state.flowData,
+            [currentStep.id]: values as Record<string, unknown>,
+          },
+        });
+      } catch {
+        dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'invalid' });
+        return;
+      }
     }
 
     if (currentStep.type === 'upload') {
@@ -54,10 +68,27 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
         if (uploadState?.objectUrl) {
           uploadData[field.id] = uploadState.objectUrl;
         }
+        if (uploadState?.fileId) {
+          uploadData[`${field.id}FileId`] = uploadState.fileId;
+        }
       });
 
       dispatch({ type: 'SAVE_STEP_DATA', stepId: currentStep.id, data: uploadData });
       dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'complete' });
+
+      try {
+        await runtime.onStepComplete?.({
+          stepId: currentStep.id,
+          data: uploadData,
+          flowData: {
+            ...state.flowData,
+            [currentStep.id]: uploadData,
+          },
+        });
+      } catch {
+        dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'invalid' });
+        return;
+      }
     }
 
     let nextIndex = state.currentStepIndex + 1;
@@ -75,7 +106,7 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
     if (nextIndex < resolvedSteps.length) {
       dispatch({ type: 'GO_NEXT', nextIndex });
     }
-  }, [dispatch, resolvedSteps, state]);
+  }, [dispatch, resolvedSteps, runtime, state]);
 
   const back = useCallback(() => {
     if (state.stepHistory.length > 0) {

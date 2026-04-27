@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMySubmissions } from '@/features/submissions/submissionThunks';
 import { selectAllSubmissions } from '@/features/submissions/submissionsSlice';
+import { selectCurrentUser } from '@/features/auth/authSlice';
 import { SUBMISSION_STATUS } from '@/constants/submissionStatus';
 import { PERMISSIONS } from '@/constants/permissions';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { canAccessSubmissionFlow } from '@/constants/submissionFlowAccess';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
@@ -18,7 +20,9 @@ const AuthorDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const submissions = useSelector(selectAllSubmissions);
+  const user = useSelector(selectCurrentUser);
   const status = useSelector((state) => state.submissions.status);
+  const canStartSubmission = canAccessSubmissionFlow(user?.email);
   const [page, setPage] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
@@ -38,9 +42,11 @@ const AuthorDashboard = () => {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-bold text-gray-900">My Submissions</h1>
         <PermissionGate permission={PERMISSIONS.SUBMIT_PAPER}>
-          <Button variant="primary" onClick={() => navigate(ACCOUNT_ROUTES.AUTHOR_PROFILE)} fullWidth className="sm:w-auto">
-            + New Submission
-          </Button>
+          {canStartSubmission ? (
+            <Button variant="primary" onClick={() => navigate(ACCOUNT_ROUTES.AUTHOR_PROFILE)} fullWidth className="sm:w-auto">
+              + New Submission
+            </Button>
+          ) : null}
         </PermissionGate>
       </div>
 
@@ -54,9 +60,11 @@ const AuthorDashboard = () => {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <p className="text-gray-500 text-sm">No submissions yet.</p>
-          <Button variant="primary" onClick={() => navigate(ACCOUNT_ROUTES.AUTHOR_PROFILE)} fullWidth className="sm:w-auto">
-            Create your first submission
-          </Button>
+          {canStartSubmission ? (
+            <Button variant="primary" onClick={() => navigate(ACCOUNT_ROUTES.AUTHOR_PROFILE)} fullWidth className="sm:w-auto">
+              Create your first submission
+            </Button>
+          ) : null}
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { StepComponentProps } from '../types/config';
 import { useFlowContext } from '../context/FlowContext';
 import { useFlowNavigation } from '../hooks/useFlowNavigation';
@@ -8,6 +9,39 @@ import { StepNavigation } from '../components/StepNavigation';
 export function ReviewStep({ step, config, resolvedSteps }: StepComponentProps) {
   const { state, dispatch, runtime } = useFlowContext();
   const nav = useFlowNavigation(resolvedSteps, config);
+  const [isLoadingReview, setIsLoadingReview] = useState(false);
+  const [reviewLoadError, setReviewLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!runtime.fetchReviewData) {
+      return;
+    }
+
+    let active = true;
+    const loadReview = async () => {
+      setIsLoadingReview(true);
+      setReviewLoadError(null);
+      try {
+        await runtime.fetchReviewData();
+      } catch (error) {
+        if (!active) return;
+        const message =
+          error && typeof error === 'object' && 'message' in error
+            ? String(error.message)
+            : 'Could not refresh review data.';
+        setReviewLoadError(message);
+      } finally {
+        if (active) {
+          setIsLoadingReview(false);
+        }
+      }
+    };
+
+    void loadReview();
+    return () => {
+      active = false;
+    };
+  }, [runtime]);
   const handleExportPDF = () => {
     window.print();
   };
@@ -40,6 +74,16 @@ export function ReviewStep({ step, config, resolvedSteps }: StepComponentProps) 
       </div>
 
       <div className="space-y-5">
+        {isLoadingReview ? (
+          <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
+            Refreshing review data...
+          </div>
+        ) : null}
+        {reviewLoadError ? (
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            {reviewLoadError}
+          </div>
+        ) : null}
         {summarySteps.map((summaryStep) => (
           <ReviewSection key={summaryStep.id} step={summaryStep} data={state.flowData[summaryStep.id] ?? {}} />
         ))}

@@ -44,11 +44,16 @@ export const submissionHandlers = [
     );
   }),
 
-  http.get(`${BASE}/submissions/presigned-url`, () => {
+  http.get(`${BASE}/files/presigned-url`, ({ request }) => {
+    const url = new URL(request.url);
+    const fileName = url.searchParams.get('fileName') ?? 'mock-paper.pdf';
+    const publicationId = url.searchParams.get('publicationId') ?? 'sub-new';
+    const s3Key = `uploads/${publicationId}/${fileName}`;
     return HttpResponse.json({
       presignedUrl:
-        'https://medpublish-dev.s3.amazonaws.com/uploads/mock-paper.pdf?X-Amz-Signature=mocksig',
-      objectUrl: 'https://medpublish-dev.s3.amazonaws.com/uploads/mock-paper.pdf',
+        `https://medpublish-dev.s3.amazonaws.com/${s3Key}?X-Amz-Signature=mocksig`,
+      s3Key,
+      fileUrl: `https://medpublish-dev.s3.amazonaws.com/${s3Key}`,
     });
   }),
 
@@ -106,8 +111,16 @@ export const submissionHandlers = [
     });
   }),
 
-  http.patch(`${BASE}/submissions/:id/files`, () => {
-    return HttpResponse.json({ fileId: `file-${Math.random().toString(36).slice(2, 10)}` });
+  http.post(`${BASE}/files/attach`, async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({
+      fileId: `file-${Math.random().toString(36).slice(2, 10)}`,
+      ...body,
+    });
+  }),
+
+  http.delete(`${BASE}/files/:fileId`, ({ params }) => {
+    return HttpResponse.json({ deleted: true, fileId: params.fileId });
   }),
 
   http.patch(`${BASE}/submissions/:id`, async ({ params, request }) => {

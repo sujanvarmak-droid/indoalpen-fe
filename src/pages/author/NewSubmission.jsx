@@ -33,6 +33,14 @@ const STEP_TYPE_MAP = {
   'reviewer-suggestion': 'SUGGEST_REVIEWERS',
   'additional-info': 'ADDITIONAL_INFO',
 };
+const AUTHOR_ROLE_IDS = {
+  corresponding: '89ce84c5-e19d-4da1-9134-3748d6a040ab',
+};
+const FILE_TYPE_MAP = {
+  manuscript: 'MANUSCRIPT',
+  figures: 'FIGURE',
+  video: 'VIDEO',
+};
 
 export const NewSubmission = () => {
   const navigate = useNavigate();
@@ -43,7 +51,8 @@ export const NewSubmission = () => {
   const [initError, setInitError] = useState(null);
   const initializedRef = useRef(false);
   const uploadedFileIdsRef = useRef({});
-  const requestedJournalCode = searchParams.get('journalCode');
+  const requestedJournalCode =
+    searchParams.get('journalSubTypeId') ?? searchParams.get('journalCode');
   const journalCode = ALLOWED_JOURNAL_CODES.includes(requestedJournalCode ?? '')
     ? requestedJournalCode
     : ALLOWED_JOURNAL_CODES[0];
@@ -88,26 +97,52 @@ export const NewSubmission = () => {
     if (!submissionId) {
       throw new Error('Submission ID is not available.');
     }
-    const { presignedUrl, objectUrl } = await getPresignedUrl({
-      filename: file.name,
+    const presign = await getPresignedUrl({
+      fileName: file.name,
       contentType: file.type,
+      publicationId: submissionId,
     });
+    const presignedUrl =
+      presign?.presignedUrl ??
+      presign?.uploadUrl ??
+      presign?.url ??
+      null;
+    const s3Key =
+      presign?.s3Key ??
+      presign?.key ??
+      presign?.objectKey ??
+      null;
+
+    if (!presignedUrl || !s3Key) {
+      throw new Error('Presigned URL response missing required fields.');
+    }
 
     const axios = (await import('axios')).default;
-    await axios.put(presignedUrl, file, {
-      headers: { 'Content-Type': file.type },
-      onUploadProgress: (event) => {
-        if (event.total) {
-          onProgress(Math.round((event.loaded / event.total) * 100));
-        }
-      },
-    });
+    try {
+      await axios.put(presignedUrl, file, {
+        headers: { 'Content-Type': file.type },
+        onUploadProgress: (event) => {
+          if (event.total) {
+            onProgress(Math.round((event.loaded / event.total) * 100));
+          }
+        },
+      });
+    } catch (error) {
+      // Browser blocks cross-origin S3 uploads on failed preflight/CORS and surfaces as network error.
+      if (error && typeof error === 'object' && 'message' in error && String(error.message) === 'Network Error') {
+        throw new Error(
+          'S3 upload blocked by CORS/preflight. Please update bucket CORS to allow PUT from this frontend origin.'
+        );
+      }
+      throw error;
+    }
 
     const attachedFile = await attachFile({
-      submissionId,
-      fileUrl: objectUrl,
+      publicationId: submissionId,
+      s3Key,
       fileName: file.name,
-      fileType: fieldId,
+      contentType: file.type,
+      fileType: FILE_TYPE_MAP[fieldId] ?? fieldId.toUpperCase(),
     });
 
     const uploadedFileId =
@@ -121,7 +156,7 @@ export const NewSubmission = () => {
       uploadedFileIdsRef.current[fieldId] = String(uploadedFileId);
     }
 
-    return { objectUrl, fileName: file.name };
+    return { objectUrl: presign?.fileUrl ?? presign?.objectUrl ?? s3Key, fileName: file.name };
   };
 
   const createSaveStepFn = () => async (stepId, stepData) => {
@@ -139,7 +174,7 @@ export const NewSubmission = () => {
         submissionId,
         stepType,
         data: {
-          journalSubTypeId: stepData?.articleType ?? null,
+          journalCode: stepData?.articleType ?? null,
         },
       });
     }
@@ -162,10 +197,18 @@ export const NewSubmission = () => {
         data: {
           authors: authorList.map((author) => ({
             fullName: `${author?.firstName ?? ''} ${author?.lastName ?? ''}`.trim(),
+            firstName: author?.firstName ?? '',
+            lastName: author?.lastName ?? '',
             email: author?.email ?? '',
             affiliation: author?.affiliation ?? '',
-            roleId: author?.role ?? '',
-            isCorresponding: author?.role === 'corresponding',
+            authorRoleId:
+              author?.authorRoleId ??
+              AUTHOR_ROLE_IDS[author?.role] ??
+              author?.role ??
+              '',
+            isCorresponding:
+              author?.role === 'corresponding' ||
+              (author?.authorRoleId ?? AUTHOR_ROLE_IDS[author?.role] ?? '') === AUTHOR_ROLE_IDS.corresponding,
           })),
         },
       });

@@ -129,10 +129,7 @@ export const publishJourneyConfig: FlowConfig = {
                 }),
               })
             )
-            .min(1, 'At least one author is required')
-            .refine((authors) => authors.some((a) => a.role === 'corresponding'), {
-              message: 'At least one Corresponding Author is required',
-            }),
+            .min(1, 'At least one author is required'),
           defaultValue: [{ email: '', firstName: '', lastName: '', affiliation: '', role: '' }],
         },
       ],

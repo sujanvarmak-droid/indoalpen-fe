@@ -4,6 +4,29 @@ import { FlowConfig, StepConfig } from '../types/config';
 import { useFlowContext } from '../context/FlowContext';
 import { evaluateCondition } from '../utils/evaluateCondition';
 
+const getFirstValidationMessage = (errors: unknown): string | null => {
+  if (!errors || typeof errors !== 'object') return null;
+
+  if ('message' in errors && typeof (errors as { message?: unknown }).message === 'string') {
+    return (errors as { message: string }).message;
+  }
+
+  if (Array.isArray(errors)) {
+    for (const item of errors) {
+      const nested = getFirstValidationMessage(item);
+      if (nested) return nested;
+    }
+    return null;
+  }
+
+  for (const value of Object.values(errors as Record<string, unknown>)) {
+    const nested = getFirstValidationMessage(value);
+    if (nested) return nested;
+  }
+
+  return null;
+};
+
 export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConfig) {
   const { state, dispatch, runtime } = useFlowContext();
   const formRef = useRef<UseFormReturn | null>(null);
@@ -17,20 +40,36 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
     if (!currentStep) {
       return;
     }
+    dispatch({ type: 'SET_SUBMIT_ERROR', error: null });
 
     if (currentStep.type === 'form') {
       if (!formRef.current) {
+        dispatch({ type: 'SET_SUBMIT_ERROR', error: 'Form is not ready. Please try again.' });
         return;
       }
       const isValid = await formRef.current.trigger();
       if (!isValid) {
+        const validationMessage =
+          getFirstValidationMessage(formRef.current.formState.errors) ??
+          'Please complete all required fields to continue.';
+        dispatch({ type: 'SET_SUBMIT_ERROR', error: validationMessage });
         dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'invalid' });
         return;
       }
       const values = formRef.current.getValues();
       dispatch({ type: 'SAVE_STEP_DATA', stepId: currentStep.id, data: values });
       if (runtime.saveStep) {
-        await runtime.saveStep(currentStep.id, values);
+        try {
+          await runtime.saveStep(currentStep.id, values);
+        } catch (error) {
+          const message =
+            error && typeof error === 'object' && 'message' in error
+              ? String(error.message)
+              : 'Failed to save this step. Please try again.';
+          dispatch({ type: 'SET_SUBMIT_ERROR', error: message });
+          dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'invalid' });
+          return;
+        }
       }
       dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'complete' });
     }
@@ -40,6 +79,7 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
         (field) => field.required && !state.uploadState[field.id]?.objectUrl
       );
       if (missing.length > 0) {
+        dispatch({ type: 'SET_SUBMIT_ERROR', error: 'Please upload all required files to continue.' });
         missing.forEach((field) =>
           dispatch({
             type: 'SET_UPLOAD',
@@ -61,7 +101,17 @@ export function useFlowNavigation(resolvedSteps: StepConfig[], _config: FlowConf
 
       dispatch({ type: 'SAVE_STEP_DATA', stepId: currentStep.id, data: uploadData });
       if (runtime.saveStep) {
-        await runtime.saveStep(currentStep.id, uploadData);
+        try {
+          await runtime.saveStep(currentStep.id, uploadData);
+        } catch (error) {
+          const message =
+            error && typeof error === 'object' && 'message' in error
+              ? String(error.message)
+              : 'Failed to save this step. Please try again.';
+          dispatch({ type: 'SET_SUBMIT_ERROR', error: message });
+          dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'invalid' });
+          return;
+        }
       }
       dispatch({ type: 'SET_STEP_STATUS', stepId: currentStep.id, status: 'complete' });
     }

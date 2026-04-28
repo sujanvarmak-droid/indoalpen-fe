@@ -69,6 +69,11 @@ export function FormStep({ step, config, resolvedSteps }: StepComponentProps) {
             <FieldRenderer key={field.id} field={field} />
           ))}
         </div>
+        {state.submitError ? (
+          <div className="mt-5 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {state.submitError}
+          </div>
+        ) : null}
         <StepNavigation
           onBack={nav.back}
           canGoBack={nav.canGoBack}

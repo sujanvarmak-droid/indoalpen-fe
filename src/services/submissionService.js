@@ -35,18 +35,31 @@ export const submitForReview = async (id) => {
   return response.data;
 };
 
-export const getPresignedUrl = async ({ filename, contentType }) => {
-  const response = await api.get('/submissions/presigned-url', {
-    params: { filename, contentType },
+export const getPresignedUrl = async ({ fileName, contentType, publicationId }) => {
+  const response = await api.get('/files/presigned-url', {
+    params: { fileName, contentType, publicationId },
   });
   return response.data;
 };
 
-export const attachFile = async ({ submissionId, fileUrl, fileName, fileType }) => {
-  const response = await api.patch(`/submissions/${submissionId}/files`, {
-    fileUrl,
+export const attachFile = async ({
+  publicationId,
+  s3Key,
+  fileName,
+  contentType,
+  fileType,
+}) => {
+  const response = await api.post('/files/attach', {
+    publicationId,
+    s3Key,
     fileName,
+    contentType,
     fileType,
   });
+  return response.data;
+};
+
+export const deleteFile = async (fileId) => {
+  const response = await api.delete(`/files/${fileId}`);
   return response.data;
 };

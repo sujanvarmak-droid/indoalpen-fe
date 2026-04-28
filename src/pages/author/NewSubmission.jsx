@@ -43,6 +43,24 @@ const FILE_TYPE_MAP = {
   figures: 'FIGURE',
   video: 'VIDEO',
 };
+const FILE_EXTENSION_TO_CONTENT_TYPE = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  txt: 'text/plain',
+};
+
+const resolveFileContentType = (file) => {
+  const detectedType = String(file?.type ?? '').trim();
+  if (detectedType) {
+    return detectedType;
+  }
+  const extension = String(file?.name ?? '')
+    .split('.')
+    .pop()
+    ?.toLowerCase();
+  return FILE_EXTENSION_TO_CONTENT_TYPE[extension] ?? 'application/octet-stream';
+};
 
 export const NewSubmission = () => {
   const navigate = useNavigate();
@@ -108,9 +126,10 @@ export const NewSubmission = () => {
     if (!submissionId) {
       throw new Error('Submission ID is not available.');
     }
+    const contentType = resolveFileContentType(file);
     const presign = await getPresignedUrl({
       fileName: file.name,
-      contentType: file.type,
+      contentType,
       publicationId: submissionId,
     });
     const presignedUrl =
@@ -131,7 +150,7 @@ export const NewSubmission = () => {
     const axios = (await import('axios')).default;
     try {
       await axios.put(presignedUrl, file, {
-        headers: { 'Content-Type': file.type },
+        headers: { 'Content-Type': contentType },
         onUploadProgress: (event) => {
           if (event.total) {
             onProgress(Math.round((event.loaded / event.total) * 100));
@@ -152,7 +171,7 @@ export const NewSubmission = () => {
       publicationId: submissionId,
       s3Key,
       fileName: file.name,
-      contentType: file.type,
+      contentType,
       fileType: FILE_TYPE_MAP[fieldId] ?? fieldId.toUpperCase(),
     });
 

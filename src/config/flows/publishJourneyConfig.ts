@@ -210,11 +210,16 @@ export const publishJourneyConfig: FlowConfig = {
         {
           id: 'manuscript',
           label: 'Manuscript File',
-          mimeTypes: ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+          mimeTypes: [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'text/plain',
+          ],
           maxMb: 20,
           maxFiles: 1,
           required: true,
-          hint: 'DOC or DOCX only. Max 20 MB. Do not include author names (blind review).',
+          hint: 'PDF, DOC, DOCX, or TXT only. Max 20 MB. Do not include author names (blind review).',
         },
         {
           id: 'figures',

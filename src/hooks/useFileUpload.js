@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { validateFile } from '@/utils/fileValidation';
 import { setUploadProgress, setUploadStatus } from '@/features/submissions/submissionsSlice';
@@ -30,13 +29,23 @@ export const useFileUpload = () => {
         getPresignedUrl({ filename: file.name, contentType: file.type })
       ).unwrap();
 
-      await axios.put(presignedUrl, file, {
-        headers: { 'Content-Type': file.type },
-        onUploadProgress: (e) => {
-          const pct = Math.round((e.loaded / e.total) * 100);
-          setProgress(pct);
-          dispatch(setUploadProgress({ submissionId, progress: pct }));
-        },
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', presignedUrl);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            setProgress(pct);
+            dispatch(setUploadProgress({ submissionId, progress: pct }));
+          }
+        });
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`S3 upload failed: ${xhr.status}`));
+        });
+        xhr.addEventListener('error', () => reject(new Error('S3 upload failed')));
+        xhr.send(file);
       });
 
       await dispatch(

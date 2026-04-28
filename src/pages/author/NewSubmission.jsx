@@ -16,6 +16,25 @@ import {
 import { SubmissionFlow } from '@/packages/submission-flow';
 import { publishJourneyConfig } from '@/config/flows/publishJourneyConfig';
 
+function uploadToS3(presignedUrl, file, contentType, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', presignedUrl);
+    xhr.setRequestHeader('Content-Type', contentType);
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable && event.total) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(`S3 upload failed: ${xhr.status}`));
+    });
+    xhr.addEventListener('error', () => reject(new Error('S3 upload failed')));
+    xhr.send(file);
+  });
+}
+
 const ALLOWED_JOURNAL_CODES = [
   'GRA-RE',
   'ENG-INN-RES',
@@ -147,25 +166,7 @@ export const NewSubmission = () => {
       throw new Error('Presigned URL response missing required fields.');
     }
 
-    const axios = (await import('axios')).default;
-    try {
-      await axios.put(presignedUrl, file, {
-        headers: { 'Content-Type': contentType },
-        onUploadProgress: (event) => {
-          if (event.total) {
-            onProgress(Math.round((event.loaded / event.total) * 100));
-          }
-        },
-      });
-    } catch (error) {
-      // Browser blocks cross-origin S3 uploads on failed preflight/CORS and surfaces as network error.
-      if (error && typeof error === 'object' && 'message' in error && String(error.message) === 'Network Error') {
-        throw new Error(
-          'S3 upload blocked by CORS/preflight. Please update bucket CORS to allow PUT from this frontend origin.'
-        );
-      }
-      throw error;
-    }
+    await uploadToS3(presignedUrl, file, contentType, onProgress);
 
     const attachedFile = await attachFile({
       publicationId: submissionId,

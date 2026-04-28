@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { addToast } from '@/features/ui/uiSlice';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { useAuth } from '@/hooks/useAuth';
 import {
   attachFile,
   getSubmissionById,
@@ -36,6 +37,7 @@ const STEP_TYPE_MAP = {
 const AUTHOR_ROLE_IDS = {
   corresponding: '89ce84c5-e19d-4da1-9134-3748d6a040ab',
 };
+const ALLOWED_FLOW_EMAIL = 'sujanvarmak@gmail.com';
 const FILE_TYPE_MAP = {
   manuscript: 'MANUSCRIPT',
   figures: 'FIGURE',
@@ -46,6 +48,7 @@ export const NewSubmission = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
+  const { user } = useAuth();
   const [submissionId, setSubmissionId] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState(null);
@@ -56,8 +59,16 @@ export const NewSubmission = () => {
   const journalCode = ALLOWED_JOURNAL_CODES.includes(requestedJournalCode ?? '')
     ? requestedJournalCode
     : ALLOWED_JOURNAL_CODES[0];
+  const canUseSubmissionFlow =
+    String(user?.email ?? '')
+      .trim()
+      .toLowerCase() === ALLOWED_FLOW_EMAIL;
 
   useEffect(() => {
+    if (!canUseSubmissionFlow) {
+      setIsInitializing(false);
+      return;
+    }
     if (initializedRef.current) return;
     initializedRef.current = true;
 
@@ -83,7 +94,7 @@ export const NewSubmission = () => {
     };
 
     void initDraft();
-  }, [journalCode]);
+  }, [canUseSubmissionFlow, journalCode]);
 
   const createSubmitFn = () => async (payload) => {
     if (!submissionId) {
@@ -284,6 +295,21 @@ export const NewSubmission = () => {
     return (
       <div className="py-12 text-center text-sm text-gray-500">
         Preparing your submission...
+      </div>
+    );
+  }
+
+  if (!canUseSubmissionFlow) {
+    return (
+      <div className="py-12 text-center">
+        <p className="text-sm text-red-600">This submission flow is enabled only for {ALLOWED_FLOW_EMAIL}.</p>
+        <button
+          type="button"
+          onClick={() => navigate(ACCOUNT_ROUTES.DASHBOARD)}
+          className="mt-4 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+        >
+          Back to Dashboard
+        </button>
       </div>
     );
   }

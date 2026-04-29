@@ -124,7 +124,11 @@ export const submissionHandlers = [
     const body = await request.json();
     return HttpResponse.json({
       fileId: `file-${Math.random().toString(36).slice(2, 10)}`,
-      ...body,
+      publicationId: body?.publicationId,
+      s3Url: body?.s3Url,
+      fileName: body?.fileName,
+      fileType: body?.fileType,
+      fileSizeBytes: body?.fileSizeBytes ?? 0,
     });
   }),
 

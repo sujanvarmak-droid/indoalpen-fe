@@ -58,9 +58,9 @@ export const getPresignedUrl = createAsyncThunk(
 
 export const attachFile = createAsyncThunk(
   'submissions/attachFile',
-  async ({ publicationId, s3Key, fileName, contentType, fileType }, { rejectWithValue }) => {
+  async ({ publicationId, s3Url, fileName, fileType, fileSizeBytes }, { rejectWithValue }) => {
     try {
-      return await submissionService.attachFile({ publicationId, s3Key, fileName, contentType, fileType });
+      return await submissionService.attachFile({ publicationId, s3Url, fileName, fileType, fileSizeBytes });
     } catch (error) {
       return rejectWithValue(error.response?.data?.message ?? error.message);
     }

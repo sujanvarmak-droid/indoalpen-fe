@@ -395,7 +395,7 @@ export const NewSubmission = () => {
 
     await uploadToS3(presignedUrl, file, signedContentType, onProgress);
 
-    const s3Key =
+    const s3Url =
       presign?.s3Key ??
       presign?.key ??
       presign?.objectKey ??
@@ -403,10 +403,10 @@ export const NewSubmission = () => {
 
     const attachedFile = await attachFile({
       publicationId: submissionId,
-      s3Key,
+      s3Url,
       fileName: file.name,
-      contentType: signedContentType,
       fileType: FILE_TYPE_MAP[fieldId] ?? fieldId.toUpperCase(),
+      fileSizeBytes: file.size,
     });
 
     const uploadedFileId =

@@ -56,7 +56,7 @@ export const useFileUpload = () => {
         xhr.send(file);
       });
 
-      const s3Key =
+      const s3Url =
         presignResult?.s3Key ??
         presignResult?.key ??
         presignResult?.objectKey ??
@@ -65,10 +65,10 @@ export const useFileUpload = () => {
       await dispatch(
         attachFile({
           publicationId: submissionId,
-          s3Key,
+          s3Url,
           fileName: file.name,
-          contentType: signedContentType,
           fileType: 'MANUSCRIPT',
+          fileSizeBytes: file.size,
         })
       ).unwrap();
 

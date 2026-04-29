@@ -116,17 +116,17 @@ export const getPresignedUrl = async ({ fileName, contentType, publicationId }) 
 
 export const attachFile = async ({
   publicationId,
-  s3Key,
+  s3Url,
   fileName,
-  contentType,
   fileType,
+  fileSizeBytes,
 }) => {
   const response = await api.post('/files/attach', {
     publicationId,
-    s3Key,
+    s3Url,
     fileName,
-    contentType,
     fileType,
+    fileSizeBytes,
   });
   return response.data;
 };

@@ -10,8 +10,10 @@ export const signup = async ({ fullName, email, password, consentGiven }) => {
   return res.data; // { message }
 };
 
-export const getMe = async () => {
-  const res = await api.get('/auth/me');
+export const getMe = async ({ role } = {}) => {
+  const res = await api.get('/auth/me', {
+    params: role ? { role } : undefined,
+  });
   return res.data; // { id, email, fullName, role, isActive, createdAt }
 };
 

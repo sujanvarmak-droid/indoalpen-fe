@@ -16,10 +16,14 @@ const parseJwtPayload = (token) => {
 };
 
 const resolveRole = (user) => {
-  if (Array.isArray(user?.roles) && user.roles.length > 0) {
-    return String(user.roles[0]).replace(/^ROLE_/, '').toUpperCase();
-  }
   if (user?.role) return String(user.role).toUpperCase();
+
+  if (Array.isArray(user?.roles) && user.roles.length > 0) {
+    if (user.roles.length === 1) {
+      return String(user.roles[0]).replace(/^ROLE_/, '').toUpperCase();
+    }
+    return null;
+  }
 
   const tokenPayload = parseJwtPayload(getAccessToken());
   if (!tokenPayload || typeof tokenPayload !== 'object') return null;

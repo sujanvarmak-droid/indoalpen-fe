@@ -10,6 +10,7 @@ import {
 
 const extractError = (error) =>
   error.response?.data ?? { code: 'UNKNOWN', message: error.message };
+const ACTIVE_ROLE_STORAGE_KEY = 'activeRole';
 
 const normalizeRole = (rawRole) => String(rawRole).replace(/^ROLE_/, '').toUpperCase();
 
@@ -28,24 +29,51 @@ const resolveRoles = (data) => {
 
 const normalizeAuthUser = (data) => {
   const roles = resolveRoles(data);
+  const apiRole = data?.role ? normalizeRole(data.role) : null;
+  const selectedRole = roles.find((role) => role === getStoredActiveRole()) ?? null;
+  const role = apiRole ?? selectedRole ?? (roles.length === 1 ? roles[0] : null);
   return {
     id: data?.id ?? data?.userId ?? null,
     email: data?.email ?? '',
     fullName: data?.fullName ?? data?.name ?? '',
-    role: roles[0] ?? null,
+    role,
     roles,
     permissions: Array.isArray(data?.permissions) ? data.permissions : [],
+    requiresRoleSelection: roles.length > 1 && !role,
   };
+};
+
+const getStoredActiveRole = () => {
+  if (typeof window === 'undefined') return null;
+  const value = window.localStorage.getItem(ACTIVE_ROLE_STORAGE_KEY);
+  return value ? normalizeRole(value) : null;
+};
+
+const setStoredActiveRole = (role) => {
+  if (typeof window === 'undefined') return;
+  if (!role) {
+    window.localStorage.removeItem(ACTIVE_ROLE_STORAGE_KEY);
+    return;
+  }
+  window.localStorage.setItem(ACTIVE_ROLE_STORAGE_KEY, normalizeRole(role));
 };
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials, { rejectWithValue }) => {
     try {
-      const data = await authService.login(credentials);
-      setAccessToken(data.accessToken ?? data.token);
-      setRefreshToken(data.refreshToken);
-      return normalizeAuthUser(data);
+      const loginData = await authService.login(credentials);
+      setAccessToken(loginData.accessToken ?? loginData.token);
+      setRefreshToken(loginData.refreshToken);
+      const storedRole = getStoredActiveRole();
+      const meData = await authService.getMe({ role: storedRole ?? undefined });
+      const normalizedUser = normalizeAuthUser(meData);
+      if (normalizedUser.role) {
+        setStoredActiveRole(normalizedUser.role);
+      } else if (normalizedUser.roles.length > 1) {
+        setStoredActiveRole(null);
+      }
+      return normalizedUser;
     } catch (error) {
       return rejectWithValue(extractError(error));
     }
@@ -69,8 +97,13 @@ export const restoreSession = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       if (!getAccessToken() && !getRefreshToken()) return rejectWithValue({ code: 'NO_TOKEN' });
-      const data = await authService.getMe();
-      return normalizeAuthUser(data);
+      const storedRole = getStoredActiveRole();
+      const data = await authService.getMe({ role: storedRole ?? undefined });
+      const normalizedUser = normalizeAuthUser(data);
+      if (normalizedUser.role) {
+        setStoredActiveRole(normalizedUser.role);
+      }
+      return normalizedUser;
     } catch (error) {
       clearAuthTokens();
       return rejectWithValue(extractError(error));
@@ -82,6 +115,7 @@ export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
   async () => {
     clearAuthTokens();
+    setStoredActiveRole(null);
   }
 );
 
@@ -92,7 +126,31 @@ export const verifyEmail = createAsyncThunk(
       const data = await authService.verifyEmail(token);
       setAccessToken(data.accessToken ?? data.token);
       setRefreshToken(data.refreshToken);
-      return normalizeAuthUser(data);
+      const normalizedUser = normalizeAuthUser(data);
+      if (normalizedUser.role) {
+        setStoredActiveRole(normalizedUser.role);
+      } else if (normalizedUser.roles.length > 1) {
+        setStoredActiveRole(null);
+      }
+      return normalizedUser;
+    } catch (error) {
+      return rejectWithValue(extractError(error));
+    }
+  }
+);
+
+export const switchActiveRole = createAsyncThunk(
+  'auth/switchActiveRole',
+  async (role, { rejectWithValue }) => {
+    try {
+      const normalizedRole = normalizeRole(role);
+      const data = await authService.getMe({ role: normalizedRole });
+      const normalizedUser = normalizeAuthUser(data);
+      if (!normalizedUser.roles.includes(normalizedRole)) {
+        throw new Error('Selected role is not available for this user.');
+      }
+      setStoredActiveRole(normalizedRole);
+      return { ...normalizedUser, role: normalizedRole, requiresRoleSelection: false };
     } catch (error) {
       return rejectWithValue(extractError(error));
     }

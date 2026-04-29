@@ -4,6 +4,7 @@ import {
   registerUser,
   restoreSession,
   logoutUser,
+  switchActiveRole,
   verifyEmail,
   forgotPassword,
   resetPassword,
@@ -67,6 +68,14 @@ const authSlice = createSlice({
       })
 
       .addCase(logoutUser.fulfilled, () => ({ ...initialState }))
+
+      .addCase(switchActiveRole.pending, pending)
+      .addCase(switchActiveRole.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.user = action.payload;
+        state.error = null;
+      })
+      .addCase(switchActiveRole.rejected, rejected)
 
       .addCase(verifyEmail.pending, pending)
       .addCase(verifyEmail.fulfilled, (state, action) => {

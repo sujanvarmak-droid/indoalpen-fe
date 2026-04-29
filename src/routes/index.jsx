@@ -21,6 +21,7 @@ const EditSubmission = lazy(() => import('@/pages/author/EditSubmission'));
 const Home = lazy(() => import('@/pages/Home'));
 const VerifyEmailPending = lazy(() => import('@/pages/auth/VerifyEmailPending'));
 const Browse = lazy(() => import('@/pages/Browse'));
+const RoleSelection = lazy(() => import('@/pages/auth/RoleSelection'));
 
 const FullPageSkeleton = () => (
   <div className="min-h-screen flex items-center justify-center bg-brand-muted">
@@ -46,6 +47,10 @@ export const AppRoutes = () => (
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/verify-email-pending" element={<VerifyEmailPending />} />
+        <Route
+          path={ACCOUNT_ROUTES.ROLE_SELECTION}
+          element={<AppRoute requireAuth element={<RoleSelection />} />}
+        />
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route
           path="/about-IndoAlpen Verlag"

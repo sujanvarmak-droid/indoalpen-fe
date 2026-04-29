@@ -484,8 +484,11 @@ export const NewSubmission = () => {
         stepType,
         data: {
           title: stepData?.manuscriptTitle ?? '',
-          abstract: stepData?.abstract ?? '',
+          runningTitle: stepData?.runningTitle ?? '',
+          abstractText: stepData?.abstract ?? '',
           keywords: Array.isArray(stepData?.keywords) ? stepData.keywords : [],
+          fundingSource: stepData?.fundingSource ?? null,
+          apcAgreement: stepData?.apcAgreed === 'yes',
         },
       });
     }

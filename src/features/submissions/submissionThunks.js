@@ -47,9 +47,9 @@ export const submitForReview = createAsyncThunk(
 
 export const getPresignedUrl = createAsyncThunk(
   'submissions/getPresignedUrl',
-  async ({ filename, contentType }, { rejectWithValue }) => {
+  async ({ fileName, contentType, publicationId }, { rejectWithValue }) => {
     try {
-      return await submissionService.getPresignedUrl({ filename, contentType });
+      return await submissionService.getPresignedUrl({ fileName, contentType, publicationId });
     } catch (error) {
       return rejectWithValue(error.response?.data?.message ?? error.message);
     }
@@ -58,9 +58,9 @@ export const getPresignedUrl = createAsyncThunk(
 
 export const attachFile = createAsyncThunk(
   'submissions/attachFile',
-  async ({ submissionId, fileUrl, fileName, fileType }, { rejectWithValue }) => {
+  async ({ publicationId, s3Key, fileName, contentType, fileType }, { rejectWithValue }) => {
     try {
-      return await submissionService.attachFile({ submissionId, fileUrl, fileName, fileType });
+      return await submissionService.attachFile({ publicationId, s3Key, fileName, contentType, fileType });
     } catch (error) {
       return rejectWithValue(error.response?.data?.message ?? error.message);
     }

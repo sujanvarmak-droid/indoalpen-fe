@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 
-const BASE = 'http://localhost:8080/api';
+const _rawBase = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').trim();
+const BASE = _rawBase.endsWith('/api') ? _rawBase : `${_rawBase}/api`;
 
 const mockSubmissions = [
   {
@@ -128,5 +129,9 @@ export const submissionHandlers = [
     const found = mockSubmissions.find((s) => s.id === params.id);
     const base = found ?? { id: params.id };
     return HttpResponse.json({ ...base, ...body });
+  }),
+
+  http.put('https://*.s3.amazonaws.com/*', () => {
+    return new HttpResponse(null, { status: 200 });
   }),
 ];

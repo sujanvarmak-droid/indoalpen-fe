@@ -25,8 +25,8 @@ export const useFileUpload = () => {
       setStatus('uploading');
       dispatch(setUploadStatus({ submissionId, status: 'uploading' }));
 
-      const { presignedUrl, objectUrl } = await dispatch(
-        getPresignedUrl({ filename: file.name, contentType: file.type })
+      const { presignedUrl, s3Key } = await dispatch(
+        getPresignedUrl({ fileName: file.name, contentType: file.type, publicationId: submissionId })
       ).unwrap();
 
       await new Promise((resolve, reject) => {
@@ -50,10 +50,11 @@ export const useFileUpload = () => {
 
       await dispatch(
         attachFile({
-          submissionId,
-          fileUrl: objectUrl,
+          publicationId: submissionId,
+          s3Key,
           fileName: file.name,
-          fileType: file.type,
+          contentType: file.type,
+          fileType: 'MANUSCRIPT',
         })
       ).unwrap();
 

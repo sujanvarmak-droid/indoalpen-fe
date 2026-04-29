@@ -4,6 +4,8 @@ import { useDispatch } from 'react-redux';
 import { addToast } from '@/features/ui/uiSlice';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
 import { useAuth } from '@/hooks/useAuth';
+import { useMySubmissions } from '@/hooks/useMySubmissions';
+import { DraftSubmissionsPanel } from '@/components/submission/DraftSubmissionsPanel';
 import {
   attachFile,
   getSubmissionById,
@@ -68,6 +70,7 @@ const FILE_EXTENSION_TO_CONTENT_TYPE = {
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   txt: 'text/plain',
 };
+const CORRESPONDING_AUTHOR_ROLE_ID = '89ce84c5-e19d-4da1-9134-3748d6a040ab';
 
 const resolveFileContentType = (file) => {
   const detectedType = String(file?.type ?? '').trim();
@@ -81,18 +84,219 @@ const resolveFileContentType = (file) => {
   return FILE_EXTENSION_TO_CONTENT_TYPE[extension] ?? 'application/octet-stream';
 };
 
+const mapDraftToFlowData = (draft) => {
+  if (!draft || typeof draft !== 'object') {
+    return {};
+  }
+
+  const baseDraft =
+    draft?.data && typeof draft.data === 'object'
+      ? draft.data
+      : draft;
+  const versions = Array.isArray(baseDraft?.versions) ? baseDraft.versions : [];
+  const latestVersion = versions.reduce((acc, version) => {
+    if (!acc) return version;
+    return Number(version?.version ?? 0) > Number(acc?.version ?? 0) ? version : acc;
+  }, null);
+  const mergedDraft =
+    latestVersion && typeof latestVersion === 'object'
+      ? { ...baseDraft, ...latestVersion }
+      : baseDraft;
+  const completedSteps = Array.isArray(mergedDraft?.completedSteps) ? mergedDraft.completedSteps : [];
+  const completedStepIds = completedSteps
+    .map((stepType) => {
+      const normalized = String(stepType ?? '').toUpperCase();
+      if (normalized === 'ARTICLE_TYPE') return 'article-type';
+      if (normalized === 'AUTHOR_GUIDELINES') return 'author-guidelines';
+      if (normalized === 'AUTHORS') return 'authors';
+      if (normalized === 'MANUSCRIPT_DETAILS') return 'manuscript-details';
+      if (normalized === 'FILE_UPLOAD') return 'files';
+      if (normalized === 'SUGGEST_REVIEWERS') return 'reviewer-suggestion';
+      if (normalized === 'ADDITIONAL_INFO') return 'additional-info';
+      return null;
+    })
+    .filter(Boolean);
+  const steps = Array.isArray(mergedDraft?.steps) ? mergedDraft.steps : [];
+  const stepDataByType = steps.reduce((acc, step) => {
+    const key = String(step?.stepType ?? step?.type ?? '').toUpperCase();
+    if (!key) return acc;
+    const rawData =
+      step?.data && typeof step.data === 'object'
+        ? step.data
+        : step?.payload && typeof step.payload === 'object'
+          ? step.payload
+          : step?.value && typeof step.value === 'object'
+            ? step.value
+            : step;
+    return { ...acc, [key]: rawData };
+  }, {});
+  const articleTypeData = stepDataByType.ARTICLE_TYPE ?? {};
+  const authorGuidelinesData = stepDataByType.AUTHOR_GUIDELINES ?? {};
+  const authorsData = stepDataByType.AUTHORS ?? {};
+  const manuscriptData = stepDataByType.MANUSCRIPT_DETAILS ?? {};
+  const fileUploadData = stepDataByType.FILE_UPLOAD ?? {};
+  const reviewerData = stepDataByType.SUGGEST_REVIEWERS ?? {};
+  const additionalInfoData = stepDataByType.ADDITIONAL_INFO ?? {};
+
+  const authors = Array.isArray(mergedDraft.authors)
+    ? mergedDraft.authors
+    : Array.isArray(authorsData.authors)
+      ? authorsData.authors
+      : [];
+  const suggestedReviewers = Array.isArray(mergedDraft.suggestedReviewers)
+    ? mergedDraft.suggestedReviewers
+    : Array.isArray(reviewerData.suggestedReviewers)
+      ? reviewerData.suggestedReviewers
+      : [];
+  const files = Array.isArray(mergedDraft.files)
+    ? mergedDraft.files
+    : [
+        ...(Array.isArray(mergedDraft.manuscriptFiles) ? mergedDraft.manuscriptFiles : []),
+        ...(Array.isArray(mergedDraft.images) ? mergedDraft.images : []),
+        ...(Array.isArray(mergedDraft.videos) ? mergedDraft.videos : []),
+      ];
+  const manuscriptFiles = Array.isArray(mergedDraft.manuscriptFiles) ? mergedDraft.manuscriptFiles : [];
+  const imageFiles = Array.isArray(mergedDraft.images) ? mergedDraft.images : [];
+  const videoFiles = Array.isArray(mergedDraft.videos) ? mergedDraft.videos : [];
+  const findFileByType = (type) =>
+    files.find((file) => String(file?.fileType ?? file?.type ?? '').toUpperCase() === type);
+  const manuscriptFile = findFileByType('MANUSCRIPT');
+  const videoFile = findFileByType('VIDEO');
+  const figureFiles = files.filter(
+    (file) => String(file?.fileType ?? file?.type ?? '').toUpperCase() === 'FIGURE'
+  );
+  const manuscriptUrl =
+    manuscriptFile?.fileUrl ??
+    manuscriptFile?.url ??
+    manuscriptFiles[0]?.fileUrl ??
+    manuscriptFiles[0]?.url ??
+    mergedDraft.manuscriptUrl ??
+    null;
+  const videoUrl =
+    videoFile?.fileUrl ??
+    videoFile?.url ??
+    videoFiles[0]?.fileUrl ??
+    videoFiles[0]?.url ??
+    mergedDraft.videoUrl ??
+    null;
+  const figureUrls = (
+    figureFiles.map((file) => file?.fileUrl ?? file?.url).filter(Boolean).length
+      ? figureFiles.map((file) => file?.fileUrl ?? file?.url).filter(Boolean)
+      : imageFiles.map((file) => file?.fileUrl ?? file?.url).filter(Boolean).length
+        ? imageFiles.map((file) => file?.fileUrl ?? file?.url).filter(Boolean)
+      : Array.isArray(mergedDraft.figureUrls)
+        ? mergedDraft.figureUrls
+        : []
+  );
+
+  return {
+    'article-type': {
+      articleType:
+        mergedDraft.journalCode ??
+        articleTypeData.journalCode ??
+        mergedDraft.articleType ??
+        articleTypeData.articleType ??
+        '',
+    },
+    'author-guidelines': {
+      guidelinesAgreed:
+        mergedDraft.agreed ||
+        mergedDraft.authorGuidelinesAccepted ||
+        authorGuidelinesData.agreed ||
+        completedSteps.includes('AUTHOR_GUIDELINES')
+          ? 'yes'
+          : '',
+    },
+    authors: {
+      authorList: authors.length
+        ? authors.map((author) => ({
+            email: author?.email ?? '',
+            firstName: author?.firstName ?? String(author?.fullName ?? '').split(' ').slice(0, -1).join(' '),
+            lastName: author?.lastName ?? String(author?.fullName ?? '').split(' ').slice(-1).join(' '),
+            affiliation: author?.affiliation ?? '',
+            role:
+              author?.isCorresponding ||
+              author?.authorRoleId === CORRESPONDING_AUTHOR_ROLE_ID ||
+              String(author?.authorRoleName ?? '').toLowerCase().includes('corresponding')
+                ? 'corresponding'
+                : author?.role === 'submitting' ||
+                    author?.authorRole === 'submitting' ||
+                    String(author?.authorRoleName ?? '').toLowerCase().includes('submitting')
+                  ? 'submitting'
+                  : 'co-author',
+          }))
+        : [{ email: '', firstName: '', lastName: '', affiliation: '', role: '' }],
+    },
+    'manuscript-details': {
+      manuscriptTitle: mergedDraft.title ?? manuscriptData.title ?? '',
+      runningTitle: mergedDraft.runningTitle ?? manuscriptData.runningTitle ?? '',
+      abstract: mergedDraft.abstract ?? mergedDraft.abstractText ?? manuscriptData.abstract ?? '',
+      keywords: Array.isArray(mergedDraft.keywords)
+        ? mergedDraft.keywords
+        : Array.isArray(manuscriptData.keywords)
+          ? manuscriptData.keywords
+          : [],
+      fundingSource: mergedDraft.fundingSource ?? manuscriptData.fundingSource ?? '',
+      apcAgreed:
+        mergedDraft.apcAgreed ||
+        mergedDraft.apcAgreement ||
+        manuscriptData.apcAgreed ||
+        manuscriptData.apcAgreement
+          ? 'yes'
+          : '',
+    },
+    'reviewer-suggestion': {
+      suggestedReviewers: suggestedReviewers.map((reviewer) => ({
+        reviewerName: reviewer?.name ?? reviewer?.reviewerName ?? '',
+        reviewerEmail: reviewer?.email ?? reviewer?.reviewerEmail ?? '',
+        reviewerAffiliation: reviewer?.affiliation ?? reviewer?.reviewerAffiliation ?? '',
+      })),
+    },
+    files: {
+      manuscript: manuscriptUrl ?? fileUploadData.manuscriptUrl ?? '',
+      figures:
+        figureUrls.length > 0
+          ? figureUrls
+          : Array.isArray(fileUploadData.figureUrls)
+            ? fileUploadData.figureUrls
+            : [],
+      video: videoUrl ?? fileUploadData.videoUrl ?? '',
+    },
+    'additional-info': {
+      coverLetter:
+        mergedDraft.coverLetter ??
+        mergedDraft.additionalInfo?.coverLetter ??
+        additionalInfoData.coverLetter ??
+        '',
+      declaration:
+        mergedDraft.declaration === 'yes' ||
+        mergedDraft.additionalInfo?.declaration === 'yes' ||
+        additionalInfoData.declaration === 'yes'
+          ? 'yes'
+          : '',
+    },
+    __completedStepIds: completedStepIds,
+  };
+};
+
 export const NewSubmission = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
   const { user } = useAuth();
+  const { drafts, status: submissionsStatus } = useMySubmissions({ page: 0, size: 20 });
   const [submissionId, setSubmissionId] = useState(null);
+  const [initialFlowData, setInitialFlowData] = useState({});
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState(null);
+  const [startFreshRequested, setStartFreshRequested] = useState(false);
+  const [resumeDraftId, setResumeDraftId] = useState(null);
   const initializedRef = useRef(false);
   const uploadedFileIdsRef = useRef({});
   const requestedJournalCode =
     searchParams.get('journalSubTypeId') ?? searchParams.get('journalCode');
+  const requestedDraftId = searchParams.get('draftId') ?? searchParams.get('submissionId');
+  const activeDraftId = resumeDraftId ?? requestedDraftId;
   const journalCode = ALLOWED_JOURNAL_CODES.includes(requestedJournalCode ?? '')
     ? requestedJournalCode
     : ALLOWED_JOURNAL_CODES[0];
@@ -100,9 +304,18 @@ export const NewSubmission = () => {
     String(user?.email ?? '')
       .trim()
       .toLowerCase() === ALLOWED_FLOW_EMAIL;
+  const shouldSelectDraftBeforeStart =
+    drafts.length > 0 &&
+    !startFreshRequested &&
+    !activeDraftId;
+  const isLoadingMySubmissions = submissionsStatus === 'loading';
 
   useEffect(() => {
     if (!canUseSubmissionFlow) {
+      setIsInitializing(false);
+      return;
+    }
+    if (isLoadingMySubmissions || shouldSelectDraftBeforeStart) {
       setIsInitializing(false);
       return;
     }
@@ -113,11 +326,26 @@ export const NewSubmission = () => {
       setIsInitializing(true);
       setInitError(null);
       try {
+        if (activeDraftId) {
+          const draftSubmission = await getSubmissionById(activeDraftId);
+          setInitialFlowData(mapDraftToFlowData(draftSubmission));
+          const resolvedSubmissionId =
+            draftSubmission?.submissionId ??
+            draftSubmission?.id ??
+            draftSubmission?.originalSubmissionId ??
+            draftSubmission?.data?.submissionId ??
+            draftSubmission?.data?.id ??
+            activeDraftId;
+          setSubmissionId(resolvedSubmissionId);
+          return;
+        }
+
         const startedSubmission = await startSubmission({ journalCode });
         const startedSubmissionId = startedSubmission?.submissionId ?? startedSubmission?.id ?? null;
         if (!startedSubmissionId) {
           throw new Error('Submission started but submissionId is missing.');
         }
+        setInitialFlowData({});
         setSubmissionId(startedSubmissionId);
       } catch (error) {
         const message =
@@ -131,7 +359,7 @@ export const NewSubmission = () => {
     };
 
     void initDraft();
-  }, [canUseSubmissionFlow, journalCode]);
+  }, [activeDraftId, canUseSubmissionFlow, isLoadingMySubmissions, journalCode, shouldSelectDraftBeforeStart]);
 
   const createSubmitFn = () => async (payload) => {
     if (!submissionId) {
@@ -338,6 +566,46 @@ export const NewSubmission = () => {
     );
   }
 
+  if (isLoadingMySubmissions) {
+    return (
+      <div className="py-12 text-center text-sm text-gray-500">
+        Checking your existing drafts...
+      </div>
+    );
+  }
+
+  if (shouldSelectDraftBeforeStart) {
+    return (
+      <div className="mx-auto max-w-3xl py-8 px-4 sm:px-0">
+        <h1 className="text-xl font-bold text-gray-900 mb-2">Publish Journey</h1>
+        <p className="text-sm text-gray-600 mb-5">
+          You already have draft submissions. Continue a draft or start a new one.
+        </p>
+        <DraftSubmissionsPanel
+          drafts={drafts}
+          onStartNew={() => {
+            setStartFreshRequested(true);
+            setResumeDraftId(null);
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.delete('draftId');
+              next.delete('submissionId');
+              return next;
+            });
+          }}
+          onEditDraft={(draftId) => {
+            setResumeDraftId(draftId);
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('draftId', draftId);
+              return next;
+            });
+          }}
+        />
+      </div>
+    );
+  }
+
   if (initError) {
     return (
       <div className="py-12 text-center">
@@ -351,6 +619,7 @@ export const NewSubmission = () => {
       <SubmissionFlow
         mode="inline"
         config={publishJourneyConfig}
+        initialFlowData={initialFlowData}
         submitFn={createSubmitFn()}
         saveStep={createSaveStepFn()}
         loadReview={createLoadReviewFn()}

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { SubmissionFlowProps } from './types/config';
 import { FlowProvider } from './context/FlowContext';
 import { StepRenderer } from './components/StepRenderer';
@@ -68,6 +68,7 @@ function IframeMode({
 
 function InlineMode({
   config,
+  initialFlowData,
   submitFn,
   saveStep,
   loadReview,
@@ -97,7 +98,7 @@ function InlineMode({
   const runtime = { uploadFile, submitFn, saveStep, loadReview };
 
   return (
-    <FlowProvider config={configWithCallbacks} runtime={runtime}>
+    <FlowProvider config={configWithCallbacks} runtime={runtime} initialFlowData={initialFlowData}>
       <div className={`w-full bg-gradient-to-b from-brand-muted/40 to-white ${className ?? ''}`}>
         <div className="mx-auto w-full max-w-6xl px-4 pt-3 sm:px-6 sm:pt-5 lg:px-8">
           <Stepper steps={configWithCallbacks.steps} />

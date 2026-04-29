@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchMySubmissions } from '@/features/submissions/submissionThunks';
-import { selectAllSubmissions } from '@/features/submissions/submissionsSlice';
+import { useMySubmissions } from '@/hooks/useMySubmissions';
 import { SUBMISSION_STATUS } from '@/constants/submissionStatus';
 import { PERMISSIONS } from '@/constants/permissions';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
@@ -15,20 +13,9 @@ import { formatDate } from '@/utils/formatDate';
 const PAGE_SIZE = 10;
 
 const AuthorDashboard = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const submissions = useSelector(selectAllSubmissions);
-  const status = useSelector((state) => state.submissions.status);
   const [page, setPage] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-
-  useEffect(() => {
-    dispatch(fetchMySubmissions({ page, size: PAGE_SIZE })).then((result) => {
-      if (fetchMySubmissions.fulfilled.match(result)) {
-        setTotalElements(result.payload.totalElements ?? 0);
-      }
-    });
-  }, [dispatch, page]);
+  const { submissions, status, totalElements } = useMySubmissions({ page, size: PAGE_SIZE });
 
   const totalPages = Math.ceil(totalElements / PAGE_SIZE);
   const isLoading = status === 'loading';

@@ -7,6 +7,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser } from '@/features/auth/authSlice';
 import { addToast } from '@/features/ui/uiSlice';
 import { ACCOUNT_ROUTES } from '@/constants/accountRoutes';
+import { useMySubmissions } from '@/hooks/useMySubmissions';
+import { DraftSubmissionsPanel } from '@/components/submission/DraftSubmissionsPanel';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -20,6 +22,7 @@ export const AuthorProfile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
+  const { drafts, status } = useMySubmissions({ page: 0, size: 20 });
 
   const {
     register,
@@ -53,6 +56,14 @@ export const AuthorProfile = () => {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
+      <DraftSubmissionsPanel
+        drafts={drafts}
+        isLoading={status === 'loading'}
+        onStartNew={() => navigate(ACCOUNT_ROUTES.NEW_SUBMISSION)}
+        onEditDraft={(draftId) => navigate(ACCOUNT_ROUTES.EDIT_SUBMISSION(draftId))}
+        className="mb-6"
+      />
+
       <div className="mb-8">
         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-brand">Step 1 of 9 - Author Profile</p>
         <h1 className="text-2xl font-bold text-gray-900">Confirm Your Author Details</h1>

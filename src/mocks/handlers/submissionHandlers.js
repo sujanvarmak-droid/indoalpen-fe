@@ -5,26 +5,26 @@ const BASE = _rawBase.endsWith('/api') ? _rawBase : `${_rawBase}/api`;
 
 const mockSubmissions = [
   {
-    id: 'sub-1',
+    originalSubmissionId: 'sub-1',
     title: 'Cardiac Biomarkers in Acute MI',
     abstract: 'This study examines the role of cardiac biomarkers in the early diagnosis of acute myocardial infarction and their prognostic significance.',
     keywords: ['cardiology', 'biomarkers', 'MI'],
     authors: [{ name: 'Dr. Anika Sharma', affiliation: 'AIIMS Hyderabad' }],
     category: 'Cardiology',
-    status: 'SUBMITTED',
-    version: 2,
+    latestStatus: 'SUBMITTED',
+    versions: [{ submissionId: 'sub-1', version: 2, status: 'SUBMITTED' }],
     createdAt: '2026-04-10T10:00:00Z',
     files: [],
   },
   {
-    id: 'sub-2',
+    originalSubmissionId: 'sub-2',
     title: 'Neural Plasticity Post-Stroke Rehabilitation',
     abstract: 'A retrospective analysis of neural plasticity mechanisms and their implications for post-stroke rehabilitation outcomes in adult patients.',
     keywords: ['neurology', 'stroke', 'rehabilitation'],
     authors: [{ name: 'Dr. Anika Sharma', affiliation: 'AIIMS Hyderabad' }],
     category: 'Neurology',
-    status: 'DRAFT',
-    version: 1,
+    latestStatus: 'DRAFT',
+    versions: [{ submissionId: 'sub-2', version: 1, status: 'DRAFT' }],
     createdAt: '2026-04-18T09:00:00Z',
     files: [],
   },
@@ -60,18 +60,19 @@ export const submissionHandlers = [
     });
   }),
 
-  http.get(`${BASE}/submissions`, () => {
-    return HttpResponse.json({
-      content: mockSubmissions,
-      totalElements: 2,
-      page: 0,
-      size: 10,
-    });
+  http.get(`${BASE}/submissions/my`, () => {
+    return HttpResponse.json(mockSubmissions);
   }),
 
   http.get(`${BASE}/submissions/:id`, ({ params }) => {
-    const found = mockSubmissions.find((submission) => submission.id === params.id);
-    return HttpResponse.json(found ?? { id: params.id, status: 'DRAFT' });
+    const found = mockSubmissions.find((submission) => submission.originalSubmissionId === params.id);
+    return HttpResponse.json(
+      found ?? {
+        originalSubmissionId: params.id,
+        latestStatus: 'DRAFT',
+        versions: [{ submissionId: params.id, version: 1, status: 'DRAFT' }],
+      }
+    );
   }),
 
   http.post(`${BASE}/submissions`, () => {
@@ -100,9 +101,14 @@ export const submissionHandlers = [
   }),
 
   http.post(`${BASE}/submissions/:id/submit`, ({ params }) => {
-    const found = mockSubmissions.find((s) => s.id === params.id);
-    const base = found ?? { id: params.id };
-    return HttpResponse.json({ ...base, status: 'SUBMITTED' });
+    const found = mockSubmissions.find((s) => s.originalSubmissionId === params.id);
+    const base =
+      found ??
+      {
+        originalSubmissionId: params.id,
+        versions: [{ submissionId: params.id, version: 1, status: 'DRAFT' }],
+      };
+    return HttpResponse.json({ ...base, latestStatus: 'SUBMITTED' });
   }),
 
   http.patch(`${BASE}/submissions/:id/steps/:stepType`, async ({ params, request }) => {
@@ -128,8 +134,8 @@ export const submissionHandlers = [
 
   http.patch(`${BASE}/submissions/:id`, async ({ params, request }) => {
     const body = await request.json();
-    const found = mockSubmissions.find((s) => s.id === params.id);
-    const base = found ?? { id: params.id };
+    const found = mockSubmissions.find((s) => s.originalSubmissionId === params.id);
+    const base = found ?? { originalSubmissionId: params.id };
     return HttpResponse.json({ ...base, ...body });
   }),
 

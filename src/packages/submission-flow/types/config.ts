@@ -126,6 +126,7 @@ export type FlowMode = 'inline' | 'redirect' | 'iframe';
 export interface SubmissionFlowProps {
   mode: FlowMode;
   config?: FlowConfig;
+  initialFlowData?: FlowData;
   submitFn?: SubmitFlowFn;
   saveStep?: SaveStepFn;
   loadReview?: LoadReviewFn;

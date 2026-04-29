@@ -1,12 +1,13 @@
 import { http, HttpResponse } from 'msw';
 
-const BASE = 'http://localhost:8080/api';
+const _rawBase = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').trim();
+const BASE = _rawBase.endsWith('/api') ? _rawBase : `${_rawBase}/api`;
 
 const mockAccessToken = 'eyJ.mock.access.token';
 const mockRefreshToken = 'eyJ.mock.refresh.token';
 const mockUser = {
   id:        'usr-1',
-  email:     'author@indoalpen.com',
+  email:     'sujanvarmak@gmail.com',
   fullName:  'Dr. Anika Sharma',
   role:      'AUTHOR',
   isActive:  true,

@@ -384,21 +384,22 @@ export const NewSubmission = () => {
       presign?.uploadUrl ??
       presign?.url ??
       null;
-    const s3Key =
-      presign?.s3Key ??
-      presign?.key ??
-      presign?.objectKey ??
-      null;
     const signedContentType =
       presign?.contentType ??
       presign?.mimeType ??
       contentType;
 
-    if (!presignedUrl || !s3Key) {
-      throw new Error('Presigned URL response missing required fields.');
+    if (!presignedUrl) {
+      throw new Error('Presigned URL response missing upload URL.');
     }
 
     await uploadToS3(presignedUrl, file, signedContentType, onProgress);
+
+    const s3Key =
+      presign?.s3Key ??
+      presign?.key ??
+      presign?.objectKey ??
+      presignedUrl.split('?')[0];
 
     const attachedFile = await attachFile({
       publicationId: submissionId,

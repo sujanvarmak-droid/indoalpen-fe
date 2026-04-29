@@ -28,7 +28,10 @@ export const useFileUpload = () => {
       const presignResult = await dispatch(
         getPresignedUrl({ fileName: file.name, contentType: file.type, publicationId: submissionId })
       ).unwrap();
-      const { presignedUrl, s3Key } = presignResult;
+      const presignedUrl =
+        presignResult?.presignedUrl ??
+        presignResult?.uploadUrl ??
+        presignResult?.url;
       const signedContentType =
         presignResult?.contentType ??
         presignResult?.mimeType ??
@@ -52,6 +55,12 @@ export const useFileUpload = () => {
         xhr.addEventListener('error', () => reject(new Error('S3 upload failed')));
         xhr.send(file);
       });
+
+      const s3Key =
+        presignResult?.s3Key ??
+        presignResult?.key ??
+        presignResult?.objectKey ??
+        presignedUrl.split('?')[0];
 
       await dispatch(
         attachFile({

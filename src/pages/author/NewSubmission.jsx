@@ -161,18 +161,22 @@ export const NewSubmission = () => {
       presign?.key ??
       presign?.objectKey ??
       null;
+    const signedContentType =
+      presign?.contentType ??
+      presign?.mimeType ??
+      contentType;
 
     if (!presignedUrl || !s3Key) {
       throw new Error('Presigned URL response missing required fields.');
     }
 
-    await uploadToS3(presignedUrl, file, contentType, onProgress);
+    await uploadToS3(presignedUrl, file, signedContentType, onProgress);
 
     const attachedFile = await attachFile({
       publicationId: submissionId,
       s3Key,
       fileName: file.name,
-      contentType,
+      contentType: signedContentType,
       fileType: FILE_TYPE_MAP[fieldId] ?? fieldId.toUpperCase(),
     });
 

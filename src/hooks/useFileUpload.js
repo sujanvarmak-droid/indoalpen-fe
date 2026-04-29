@@ -25,14 +25,19 @@ export const useFileUpload = () => {
       setStatus('uploading');
       dispatch(setUploadStatus({ submissionId, status: 'uploading' }));
 
-      const { presignedUrl, s3Key } = await dispatch(
+      const presignResult = await dispatch(
         getPresignedUrl({ fileName: file.name, contentType: file.type, publicationId: submissionId })
       ).unwrap();
+      const { presignedUrl, s3Key } = presignResult;
+      const signedContentType =
+        presignResult?.contentType ??
+        presignResult?.mimeType ??
+        file.type;
 
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('PUT', presignedUrl);
-        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.setRequestHeader('Content-Type', signedContentType);
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
             const pct = Math.round((e.loaded / e.total) * 100);
@@ -53,7 +58,7 @@ export const useFileUpload = () => {
           publicationId: submissionId,
           s3Key,
           fileName: file.name,
-          contentType: file.type,
+          contentType: signedContentType,
           fileType: 'MANUSCRIPT',
         })
       ).unwrap();

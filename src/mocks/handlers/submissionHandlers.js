@@ -48,6 +48,7 @@ export const submissionHandlers = [
   http.get(`${BASE}/files/presigned-url`, ({ request }) => {
     const url = new URL(request.url);
     const fileName = url.searchParams.get('fileName') ?? 'mock-paper.pdf';
+    const contentType = url.searchParams.get('contentType') ?? 'application/octet-stream';
     const publicationId = url.searchParams.get('publicationId') ?? 'sub-new';
     const s3Key = `uploads/${publicationId}/${fileName}`;
     return HttpResponse.json({
@@ -55,6 +56,7 @@ export const submissionHandlers = [
         `https://medpublish-dev.s3.amazonaws.com/${s3Key}?X-Amz-Signature=mocksig`,
       s3Key,
       fileUrl: `https://medpublish-dev.s3.amazonaws.com/${s3Key}`,
+      contentType,
     });
   }),
 
@@ -131,7 +133,7 @@ export const submissionHandlers = [
     return HttpResponse.json({ ...base, ...body });
   }),
 
-  http.put('https://*.s3.amazonaws.com/*', () => {
+  http.put(/^https?:\/\/[^/]+\.amazonaws\.com\//, () => {
     return new HttpResponse(null, { status: 200 });
   }),
 ];

@@ -293,6 +293,7 @@ export const NewSubmission = () => {
   const [resumeDraftId, setResumeDraftId] = useState(null);
   const initializedRef = useRef(false);
   const uploadedFileIdsRef = useRef({});
+  const submissionIdRef = useRef(null);
   const requestedJournalCode =
     searchParams.get('journalSubTypeId') ?? searchParams.get('journalCode');
   const requestedDraftId = searchParams.get('draftId') ?? searchParams.get('submissionId');
@@ -323,30 +324,24 @@ export const NewSubmission = () => {
     initializedRef.current = true;
 
     const initDraft = async () => {
+      if (!activeDraftId) {
+        setIsInitializing(false);
+        return;
+      }
       setIsInitializing(true);
       setInitError(null);
       try {
-        if (activeDraftId) {
-          const draftSubmission = await getSubmissionById(activeDraftId);
-          setInitialFlowData(mapDraftToFlowData(draftSubmission));
-          const resolvedSubmissionId =
-            draftSubmission?.submissionId ??
-            draftSubmission?.id ??
-            draftSubmission?.originalSubmissionId ??
-            draftSubmission?.data?.submissionId ??
-            draftSubmission?.data?.id ??
-            activeDraftId;
-          setSubmissionId(resolvedSubmissionId);
-          return;
-        }
-
-        const startedSubmission = await startSubmission({ journalCode });
-        const startedSubmissionId = startedSubmission?.submissionId ?? startedSubmission?.id ?? null;
-        if (!startedSubmissionId) {
-          throw new Error('Submission started but submissionId is missing.');
-        }
-        setInitialFlowData({});
-        setSubmissionId(startedSubmissionId);
+        const draftSubmission = await getSubmissionById(activeDraftId);
+        setInitialFlowData(mapDraftToFlowData(draftSubmission));
+        const resolvedSubmissionId =
+          draftSubmission?.submissionId ??
+          draftSubmission?.id ??
+          draftSubmission?.originalSubmissionId ??
+          draftSubmission?.data?.submissionId ??
+          draftSubmission?.data?.id ??
+          activeDraftId;
+        submissionIdRef.current = resolvedSubmissionId;
+        setSubmissionId(resolvedSubmissionId);
       } catch (error) {
         const message =
           error && typeof error === 'object' && 'message' in error
@@ -362,22 +357,20 @@ export const NewSubmission = () => {
   }, [activeDraftId, canUseSubmissionFlow, isLoadingMySubmissions, journalCode, shouldSelectDraftBeforeStart]);
 
   const createSubmitFn = () => async (payload) => {
-    if (!submissionId) {
-      throw new Error('Submission ID is not available.');
-    }
-    await updateDraft({ id: submissionId, data: payload });
-    return submitForReview(submissionId);
+    const id = submissionIdRef.current ?? submissionId;
+    if (!id) throw new Error('Submission ID is not available.');
+    await updateDraft({ id, data: payload });
+    return submitForReview(id);
   };
 
   const createUploadFn = () => async (file, fieldId, onProgress) => {
-    if (!submissionId) {
-      throw new Error('Submission ID is not available.');
-    }
+    const id = submissionIdRef.current ?? submissionId;
+    if (!id) throw new Error('Submission ID is not available.');
     const contentType = resolveFileContentType(file);
     const presign = await getPresignedUrl({
       fileName: file.name,
       contentType,
-      publicationId: submissionId,
+      publicationId: id,
     });
     const presignedUrl =
       presign?.presignedUrl ??
@@ -402,7 +395,7 @@ export const NewSubmission = () => {
       presignedUrl.split('?')[0];
 
     const attachedFile = await attachFile({
-      publicationId: submissionId,
+      publicationId: id,
       s3Url,
       fileName: file.name,
       fileType: FILE_TYPE_MAP[fieldId] ?? fieldId.toUpperCase(),
@@ -424,23 +417,32 @@ export const NewSubmission = () => {
   };
 
   const createSaveStepFn = () => async (stepId, stepData) => {
-    if (!submissionId) {
-      throw new Error('Submission ID is not available.');
-    }
-
     const stepType = STEP_TYPE_MAP[stepId];
     if (!stepType) {
       return null;
     }
 
     if (stepType === 'ARTICLE_TYPE') {
+      let currentId = submissionIdRef.current;
+      if (!currentId) {
+        const startedSubmission = await startSubmission({ journalCode });
+        currentId = startedSubmission?.submissionId ?? startedSubmission?.id ?? null;
+        if (!currentId) throw new Error('Submission started but submissionId is missing.');
+        submissionIdRef.current = currentId;
+        setSubmissionId(currentId);
+      }
       return updateSubmissionStep({
-        submissionId,
+        submissionId: currentId,
         stepType,
         data: {
           journalCode: stepData?.articleType ?? null,
         },
       });
+    }
+
+    const currentId = submissionIdRef.current ?? submissionId;
+    if (!currentId) {
+      throw new Error('Submission ID is not available.');
     }
 
     if (stepType === 'AUTHOR_GUIDELINES') {
@@ -456,7 +458,7 @@ export const NewSubmission = () => {
     if (stepType === 'AUTHORS') {
       const authorList = Array.isArray(stepData?.authorList) ? stepData.authorList : [];
       return updateSubmissionStep({
-        submissionId,
+        submissionId: currentId,
         stepType,
         data: {
           authors: authorList.map((author) => ({
@@ -480,7 +482,7 @@ export const NewSubmission = () => {
 
     if (stepType === 'MANUSCRIPT_DETAILS') {
       return updateSubmissionStep({
-        submissionId,
+        submissionId: currentId,
         stepType,
         data: {
           title: stepData?.manuscriptTitle ?? '',
@@ -496,7 +498,7 @@ export const NewSubmission = () => {
     if (stepType === 'FILE_UPLOAD') {
       const fileIds = Object.values(uploadedFileIdsRef.current).filter(Boolean);
       return updateSubmissionStep({
-        submissionId,
+        submissionId: currentId,
         stepType,
         data: { fileIds },
       });
@@ -505,7 +507,7 @@ export const NewSubmission = () => {
     if (stepType === 'SUGGEST_REVIEWERS') {
       const reviewers = Array.isArray(stepData?.suggestedReviewers) ? stepData.suggestedReviewers : [];
       return updateSubmissionStep({
-        submissionId,
+        submissionId: currentId,
         stepType,
         data: {
           suggestedReviewers: reviewers.map((reviewer) => ({
@@ -520,7 +522,7 @@ export const NewSubmission = () => {
 
     if (stepType === 'ADDITIONAL_INFO') {
       return updateSubmissionStep({
-        submissionId,
+        submissionId: currentId,
         stepType,
         data: {
           coverLetter: stepData?.coverLetter ?? '',
@@ -536,10 +538,9 @@ export const NewSubmission = () => {
   };
 
   const createLoadReviewFn = () => async () => {
-    if (!submissionId) {
-      throw new Error('Submission ID is not available.');
-    }
-    return getSubmissionById(submissionId);
+    const id = submissionIdRef.current ?? submissionId;
+    if (!id) throw new Error('Submission ID is not available.');
+    return getSubmissionById(id);
   };
 
   const handleSuccess = () => {

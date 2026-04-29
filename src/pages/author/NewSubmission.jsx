@@ -320,11 +320,16 @@ export const NewSubmission = () => {
       setIsInitializing(false);
       return;
     }
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+    const initKey = activeDraftId ?? '__fresh__';
+    if (initializedRef.current === initKey) return;
+    initializedRef.current = initKey;
+    submissionIdRef.current = null;
+    uploadedFileIdsRef.current = {};
 
     const initDraft = async () => {
       if (!activeDraftId) {
+        setSubmissionId(null);
+        setInitialFlowData({});
         setIsInitializing(false);
         return;
       }
@@ -413,7 +418,7 @@ export const NewSubmission = () => {
       uploadedFileIdsRef.current[fieldId] = String(uploadedFileId);
     }
 
-    return { objectUrl: presign?.fileUrl ?? presign?.objectUrl ?? s3Key, fileName: file.name };
+    return { objectUrl: presign?.fileUrl ?? presign?.objectUrl ?? s3Url, fileName: file.name };
   };
 
   const createSaveStepFn = () => async (stepId, stepData) => {

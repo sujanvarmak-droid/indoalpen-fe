@@ -60,11 +60,6 @@ const AUTHOR_ROLE_IDS = {
   corresponding: '89ce84c5-e19d-4da1-9134-3748d6a040ab',
 };
 const ALLOWED_FLOW_EMAIL = 'sujanvarmak@gmail.com';
-const FILE_TYPE_MAP = {
-  manuscript: 'MANUSCRIPT',
-  figures: 'FIGURE',
-  video: 'VIDEO',
-};
 const CORRESPONDING_AUTHOR_ROLE_ID = '89ce84c5-e19d-4da1-9134-3748d6a040ab';
 
 const mapDraftToFlowData = (draft) => {
@@ -434,7 +429,7 @@ export const NewSubmission = () => {
       publicationId: id,
       s3Url,
       fileName: file.name,
-      fileType: FILE_TYPE_MAP[fieldId] ?? fieldId.toUpperCase(),
+      fileType: contentType,
       fileSizeBytes: file.size,
     });
 

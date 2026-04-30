@@ -137,6 +137,12 @@ const mapDraftToFlowData = (draft) => {
   const fileUploadData = stepDataByType.FILE_UPLOAD ?? {};
   const reviewerData = stepDataByType.SUGGEST_REVIEWERS ?? {};
   const additionalInfoData = stepDataByType.ADDITIONAL_INFO ?? {};
+  const pickDefined = (...values) => values.find((value) => value !== undefined && value !== null);
+  const toYesNo = (value) => {
+    if (value === 'yes') return 'yes';
+    if (value === true) return 'yes';
+    return '';
+  };
 
   const authors = Array.isArray(mergedDraft.authors)
     ? mergedDraft.authors
@@ -192,20 +198,25 @@ const mapDraftToFlowData = (draft) => {
   return {
     'article-type': {
       articleType:
-        mergedDraft.journalCode ??
-        articleTypeData.journalCode ??
-        mergedDraft.articleType ??
-        articleTypeData.articleType ??
-        '',
+        pickDefined(
+          mergedDraft.articleType,
+          articleTypeData.articleType,
+          mergedDraft.journalCode,
+          articleTypeData.journalCode
+        ) ?? '',
     },
     'author-guidelines': {
       guidelinesAgreed:
-        mergedDraft.agreed ||
-        mergedDraft.authorGuidelinesAccepted ||
-        authorGuidelinesData.agreed ||
-        completedSteps.includes('AUTHOR_GUIDELINES')
-          ? 'yes'
-          : '',
+        toYesNo(
+          pickDefined(
+            mergedDraft.guidelinesAgreed,
+            authorGuidelinesData.guidelinesAgreed,
+            mergedDraft.agreed,
+            authorGuidelinesData.agreed,
+            mergedDraft.authorGuidelinesAccepted,
+            completedSteps.includes('AUTHOR_GUIDELINES') ? true : undefined
+          )
+        ),
     },
     authors: {
       authorList: authors.length
@@ -228,22 +239,37 @@ const mapDraftToFlowData = (draft) => {
         : [{ email: '', firstName: '', lastName: '', affiliation: '', role: '' }],
     },
     'manuscript-details': {
-      manuscriptTitle: mergedDraft.title ?? manuscriptData.title ?? '',
-      runningTitle: mergedDraft.runningTitle ?? manuscriptData.runningTitle ?? '',
-      abstract: mergedDraft.abstract ?? mergedDraft.abstractText ?? manuscriptData.abstract ?? '',
+      manuscriptTitle:
+        pickDefined(
+          mergedDraft.manuscriptTitle,
+          manuscriptData.manuscriptTitle,
+          mergedDraft.title,
+          manuscriptData.title
+        ) ?? '',
+      runningTitle:
+        pickDefined(mergedDraft.runningTitle, manuscriptData.runningTitle) ?? '',
+      abstract:
+        pickDefined(
+          mergedDraft.abstract,
+          mergedDraft.abstractText,
+          manuscriptData.abstract,
+          manuscriptData.abstractText
+        ) ?? '',
       keywords: Array.isArray(mergedDraft.keywords)
         ? mergedDraft.keywords
         : Array.isArray(manuscriptData.keywords)
           ? manuscriptData.keywords
           : [],
-      fundingSource: mergedDraft.fundingSource ?? manuscriptData.fundingSource ?? '',
-      apcAgreed:
-        mergedDraft.apcAgreed ||
-        mergedDraft.apcAgreement ||
-        manuscriptData.apcAgreed ||
-        manuscriptData.apcAgreement
-          ? 'yes'
-          : '',
+      fundingSource:
+        pickDefined(mergedDraft.fundingSource, manuscriptData.fundingSource) ?? '',
+      apcAgreed: toYesNo(
+        pickDefined(
+          mergedDraft.apcAgreed,
+          manuscriptData.apcAgreed,
+          mergedDraft.apcAgreement,
+          manuscriptData.apcAgreement
+        )
+      ),
     },
     'reviewer-suggestion': {
       suggestedReviewers: suggestedReviewers.map((reviewer) => ({
@@ -253,27 +279,49 @@ const mapDraftToFlowData = (draft) => {
       })),
     },
     files: {
-      manuscript: manuscriptUrl ?? fileUploadData.manuscriptUrl ?? '',
+      manuscript:
+        pickDefined(
+          mergedDraft.manuscript,
+          fileUploadData.manuscript,
+          manuscriptUrl,
+          mergedDraft.manuscriptUrl,
+          fileUploadData.manuscriptUrl
+        ) ?? '',
       figures:
-        figureUrls.length > 0
+        Array.isArray(mergedDraft.figures)
+          ? mergedDraft.figures
+          : Array.isArray(fileUploadData.figures)
+            ? fileUploadData.figures
+            : figureUrls.length > 0
           ? figureUrls
+          : Array.isArray(mergedDraft.figureUrls)
+            ? mergedDraft.figureUrls
           : Array.isArray(fileUploadData.figureUrls)
             ? fileUploadData.figureUrls
             : [],
-      video: videoUrl ?? fileUploadData.videoUrl ?? '',
+      video:
+        pickDefined(
+          mergedDraft.video,
+          fileUploadData.video,
+          videoUrl,
+          mergedDraft.videoUrl,
+          fileUploadData.videoUrl
+        ) ?? '',
     },
     'additional-info': {
       coverLetter:
-        mergedDraft.coverLetter ??
-        mergedDraft.additionalInfo?.coverLetter ??
-        additionalInfoData.coverLetter ??
-        '',
-      declaration:
-        mergedDraft.declaration === 'yes' ||
-        mergedDraft.additionalInfo?.declaration === 'yes' ||
-        additionalInfoData.declaration === 'yes'
-          ? 'yes'
-          : '',
+        pickDefined(
+          mergedDraft.coverLetter,
+          mergedDraft.additionalInfo?.coverLetter,
+          additionalInfoData.coverLetter
+        ) ?? '',
+      declaration: toYesNo(
+        pickDefined(
+          mergedDraft.declaration,
+          mergedDraft.additionalInfo?.declaration,
+          additionalInfoData.declaration
+        )
+      ),
     },
     __completedStepIds: completedStepIds,
   };

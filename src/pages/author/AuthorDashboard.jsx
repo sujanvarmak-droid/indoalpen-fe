@@ -46,8 +46,43 @@ const AuthorDashboard = () => {
           </Button>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="min-w-[760px] w-full text-sm">
+        <>
+          <div className="space-y-3 md:hidden">
+            {submissions.map((sub) => (
+              <div key={sub.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 text-sm font-medium text-gray-900 break-words">
+                    {sub.title || <span className="text-gray-400 italic">Untitled</span>}
+                  </p>
+                  <StatusChip status={sub.status} />
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="text-gray-500">Category</div>
+                  <div className="text-right text-gray-700">{sub.category || '—'}</div>
+                  <div className="text-gray-500">Version</div>
+                  <div className="text-right text-gray-700">v{sub.version}</div>
+                  <div className="text-gray-500">Date</div>
+                  <div className="text-right text-gray-700">{formatDate(sub.createdAt)}</div>
+                </div>
+                <div className="mt-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    fullWidth
+                    disabled={sub.status !== SUBMISSION_STATUS.DRAFT}
+                    onClick={() => {
+                      navigate(`${ACCOUNT_ROUTES.NEW_SUBMISSION}?draftId=${encodeURIComponent(sub.id)}`);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-xl border border-gray-200 bg-white md:block">
+            <table className="min-w-[760px] w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3">Title</th>
@@ -75,7 +110,9 @@ const AuthorDashboard = () => {
                       variant="secondary"
                       size="sm"
                       disabled={sub.status !== SUBMISSION_STATUS.DRAFT}
-                      onClick={() => navigate(ACCOUNT_ROUTES.EDIT_SUBMISSION(sub.id))}
+                      onClick={() => {
+                        navigate(`${ACCOUNT_ROUTES.NEW_SUBMISSION}?draftId=${encodeURIComponent(sub.id)}`);
+                      }}
                     >
                       Edit
                     </Button>
@@ -83,8 +120,9 @@ const AuthorDashboard = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+            </table>
+          </div>
+        </>
       )}
 
       {totalPages > 1 && (

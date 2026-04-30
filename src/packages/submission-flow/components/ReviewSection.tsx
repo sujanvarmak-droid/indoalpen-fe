@@ -44,7 +44,9 @@ export function ReviewSection({ step, data }: ReviewSectionProps) {
                             {(field.repeatable?.fields ?? []).map((subField) => (
                               <div key={subField.id} className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-3 sm:gap-3">
                                 <dt className="font-medium text-gray-700">{subField.label}</dt>
-                                <dd className="text-gray-600 sm:col-span-2">{formatValue(item[subField.id], subField)}</dd>
+                                <dd className="text-gray-600 break-words whitespace-pre-wrap sm:col-span-2">
+                                  {formatValue(item[subField.id], subField)}
+                                </dd>
                               </div>
                             ))}
                           </dl>
@@ -59,7 +61,9 @@ export function ReviewSection({ step, data }: ReviewSectionProps) {
             return (
               <div key={field.id} className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-3 sm:gap-3">
                 <dt className="font-medium text-gray-700">{field.label}</dt>
-                <dd className="text-gray-600 sm:col-span-2">{formatValue(data[field.id], field)}</dd>
+                <dd className="text-gray-600 break-words whitespace-pre-wrap sm:col-span-2">
+                  {formatValue(data[field.id], field)}
+                </dd>
               </div>
             );
           })}
@@ -71,7 +75,9 @@ export function ReviewSection({ step, data }: ReviewSectionProps) {
           {(step.uploadFields ?? []).map((uploadField) => (
             <div key={uploadField.id} className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-3 sm:gap-3">
               <dt className="font-medium text-gray-700">{uploadField.label}</dt>
-              <dd className="text-gray-600 sm:col-span-2">{data[uploadField.id] ? '✓ Uploaded' : '—'}</dd>
+              <dd className="text-gray-600 break-words whitespace-pre-wrap sm:col-span-2">
+                {data[uploadField.id] ? '✓ Uploaded' : '—'}
+              </dd>
             </div>
           ))}
         </dl>

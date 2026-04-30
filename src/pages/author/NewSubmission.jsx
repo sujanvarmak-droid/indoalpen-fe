@@ -17,6 +17,7 @@ import {
 } from '@/services/submissionService';
 import { SubmissionFlow } from '@/packages/submission-flow';
 import { publishJourneyConfig } from '@/config/flows/publishJourneyConfig';
+import { resolveFileMimeType } from '@/packages/submission-flow/utils/fileMime';
 
 function uploadToS3(presignedUrl, file, contentType, onProgress) {
   return new Promise((resolve, reject) => {
@@ -64,25 +65,7 @@ const FILE_TYPE_MAP = {
   figures: 'FIGURE',
   video: 'VIDEO',
 };
-const FILE_EXTENSION_TO_CONTENT_TYPE = {
-  pdf: 'application/pdf',
-  doc: 'application/msword',
-  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  txt: 'text/plain',
-};
 const CORRESPONDING_AUTHOR_ROLE_ID = '89ce84c5-e19d-4da1-9134-3748d6a040ab';
-
-const resolveFileContentType = (file) => {
-  const detectedType = String(file?.type ?? '').trim();
-  if (detectedType) {
-    return detectedType;
-  }
-  const extension = String(file?.name ?? '')
-    .split('.')
-    .pop()
-    ?.toLowerCase();
-  return FILE_EXTENSION_TO_CONTENT_TYPE[extension] ?? 'application/octet-stream';
-};
 
 const mapDraftToFlowData = (draft) => {
   if (!draft || typeof draft !== 'object') {
@@ -419,7 +402,7 @@ export const NewSubmission = () => {
   const createUploadFn = () => async (file, fieldId, onProgress) => {
     const id = submissionIdRef.current ?? submissionId;
     if (!id) throw new Error('Submission ID is not available.');
-    const contentType = resolveFileContentType(file);
+    const contentType = resolveFileMimeType(file);
     const presign = await getPresignedUrl({
       fileName: file.name,
       contentType,
@@ -566,8 +549,7 @@ export const NewSubmission = () => {
           suggestedReviewers: reviewers.map((reviewer) => ({
             name: reviewer?.reviewerName ?? '',
             email: reviewer?.reviewerEmail ?? '',
-            affiliation: reviewer?.reviewerAffiliation ?? '',
-            reason: reviewer?.reason ?? '',
+            institution: reviewer?.reviewerAffiliation ?? '',
           })),
         },
       });
